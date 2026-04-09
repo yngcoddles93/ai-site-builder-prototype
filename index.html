@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Site Builder Prototype</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 100px auto;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #cbd5e1;
+      margin-bottom: 30px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 15px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      resize: none;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 14px 28px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .output {
+      margin-top: 30px;
+      padding: 20px;
+      background: #1e293b;
+      border-radius: 12px;
+      text-align: left;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Build a Website With AI</h1>
+    <p>Describe the website you want and this prototype will start turning your idea into a site.</p>
+
+    <textarea id="promptInput" placeholder="Example: I want a modern website for a mobile detailing business with a dark theme, pricing section, and contact form."></textarea>
+    <br />
+    <button onclick="generateSite()">Generate</button>
+
+    <div class="output" id="outputBox">Your AI-generated website idea will show here.</div>
+  </div>
+
+  <script>
+    function generateSite() {
+      const prompt = document.getElementById("promptInput").value;
+      const outputBox = document.getElementById("outputBox");
+
+      if (!prompt.trim()) {
+        outputBox.textContent = "Please enter a website idea first.";
+        return;
+      }
+
+      outputBox.textContent =
+        "Prototype response:\n\nYou want a website that includes:\n- A strong homepage\n- Business-focused branding\n- Sections based on your prompt\n\nUser prompt: " + prompt;
+    }
+  </script>
+</body>
+</html>
