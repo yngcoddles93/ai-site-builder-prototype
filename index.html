@@ -14,35 +14,37 @@
     }
 
     .container {
-      max-width: 800px;
-      margin: 100px auto;
-      text-align: center;
+      max-width: 960px;
+      margin: 60px auto;
       padding: 20px;
     }
 
     h1 {
       font-size: 42px;
       margin-bottom: 10px;
+      text-align: center;
     }
 
-    p {
+    .subtext {
       font-size: 18px;
       color: #cbd5e1;
       margin-bottom: 30px;
+      text-align: center;
     }
 
     textarea {
       width: 100%;
-      height: 140px;
+      height: 130px;
       padding: 15px;
       border-radius: 12px;
       border: none;
       font-size: 16px;
       resize: none;
+      box-sizing: border-box;
     }
 
     button {
-      margin-top: 20px;
+      margin-top: 18px;
       padding: 14px 28px;
       font-size: 16px;
       border: none;
@@ -56,40 +58,174 @@
       background: #2563eb;
     }
 
-    .output {
-      margin-top: 30px;
-      padding: 20px;
+    .status {
+      margin-top: 12px;
+      color: #cbd5e1;
+      min-height: 24px;
+    }
+
+    .preview {
+      margin-top: 35px;
+      background: #111827;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #1f2937;
+    }
+
+    .hero {
+      padding: 55px 30px;
+      background: linear-gradient(135deg, #1d4ed8, #0f172a);
+    }
+
+    .hero h2 {
+      font-size: 38px;
+      margin: 0 0 12px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #dbeafe;
+      margin: 0;
+      max-width: 700px;
+    }
+
+    .section {
+      padding: 30px;
+      border-top: 1px solid #1f2937;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
       background: #1e293b;
-      border-radius: 12px;
-      text-align: left;
-      white-space: pre-wrap;
+      padding: 18px;
+      border-radius: 14px;
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .contact-box {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 14px;
+      color: #cbd5e1;
+      line-height: 1.7;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Build a Website With AI</h1>
-    <p>Describe the website you want and this prototype will start turning your idea into a site.</p>
+    <h1>Describe the website you want.</h1>
+    <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
 
-    <textarea id="promptInput" placeholder="Example: I want a modern website for a mobile detailing business with a dark theme, pricing section, and contact form."></textarea>
+    <textarea id="promptInput" placeholder="Example: Build a modern website for a mobile detailing business with a dark theme, services, pricing, testimonials, and contact section."></textarea>
     <br />
-    <button onclick="generateSite()">Generate</button>
+    <button onclick="generateSite()">Generate Website</button>
 
-    <div class="output" id="outputBox">Your AI-generated website idea will show here.</div>
+    <div class="status" id="statusText"></div>
+
+    <div class="preview" id="previewBox" style="display:none;">
+      <div class="hero">
+        <h2 id="heroTitle">Your website title will appear here</h2>
+        <p id="heroSubtitle">Your AI-generated subtitle will appear here.</p>
+      </div>
+
+      <div class="section">
+        <h3>Services</h3>
+        <div class="cards" id="servicesGrid"></div>
+      </div>
+
+      <div class="section">
+        <h3>Why Choose Us</h3>
+        <div class="cards" id="featuresGrid"></div>
+      </div>
+
+      <div class="section">
+        <h3>Contact</h3>
+        <div class="contact-box" id="contactBox"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    function generateSite() {
-      const prompt = document.getElementById("promptInput").value;
-      const outputBox = document.getElementById("outputBox");
+    function makeCards(items, targetId) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = "";
 
-      if (!prompt.trim()) {
-        outputBox.textContent = "Please enter a website idea first.";
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h4>${item.title}</h4>
+          <p>${item.description}</p>
+        `;
+        target.appendChild(div);
+      });
+    }
+
+    async function generateSite() {
+      const prompt = document.getElementById("promptInput").value.trim();
+      const statusText = document.getElementById("statusText");
+      const previewBox = document.getElementById("previewBox");
+
+      if (!prompt) {
+        statusText.textContent = "Please enter a website idea first.";
         return;
       }
 
-      outputBox.textContent =
-        "Prototype response:\n\nYou want a website that includes:\n- A strong homepage\n- Business-focused branding\n- Sections based on your prompt\n\nUser prompt: " + prompt;
+      statusText.textContent = "Generating website preview...";
+      previewBox.style.display = "none";
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Something went wrong.");
+        }
+
+        document.getElementById("heroTitle").textContent = data.heroTitle || "Business Website";
+        document.getElementById("heroSubtitle").textContent = data.heroSubtitle || "A strong modern website built from your prompt.";
+
+        makeCards(data.services || [], "servicesGrid");
+        makeCards(data.features || [], "featuresGrid");
+
+        document.getElementById("contactBox").innerHTML = `
+          <strong>${data.contactHeading || "Get in Touch"}</strong><br><br>
+          ${data.contactText || "Add your phone, email, and contact form here."}
+        `;
+
+        previewBox.style.display = "block";
+        statusText.textContent = "Done.";
+      } catch (error) {
+        statusText.textContent = "Error: " + error.message;
+      }
     }
   </script>
 </body>
