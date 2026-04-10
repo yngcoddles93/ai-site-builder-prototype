@@ -170,7 +170,10 @@
       </div>
     </div>
   </div>
-
+<div class="history-panel">
+  <h3>Version History</h3>
+  <div id="historyList"></div>
+</div>
   <script>
     let siteData = {
   heroTitle: "Business Website",
@@ -199,6 +202,22 @@ function loadSavedSite() {
 
 function saveVersionBeforeChange() {
   const history = JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+
+  history.unshift({
+    timestamp: new Date().toISOString(),
+    data: JSON.parse(JSON.stringify(siteData))
+  });
+
+  if (history.length > MAX_HISTORY) {
+    history.pop();
+  }
+
+  localStorage.setItem(SITE_HISTORY_KEY, JSON.stringify(history));
+}
+
+function getVersionHistory() {
+  return JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+}
 function renderHistoryList() {
   const historyList = document.getElementById("historyList");
   const history = getVersionHistory();
@@ -223,22 +242,6 @@ function renderHistoryList() {
     })
     .join("");
 }
-  history.unshift({
-    timestamp: new Date().toISOString(),
-    data: JSON.parse(JSON.stringify(siteData))
-  });
-
-  if (history.length > MAX_HISTORY) {
-    history.pop();
-  }
-
-  localStorage.setItem(SITE_HISTORY_KEY, JSON.stringify(history));
-}
-
-function getVersionHistory() {
-  return JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
-}
-
 function restoreVersion(index) {
   const history = getVersionHistory();
 
@@ -379,6 +382,8 @@ renderHistoryList();
     statusText.textContent = "Update failed.";
   }
 }
+    loadSavedSite();
+renderHistoryList();
   </script>
 </body>
 </html>
