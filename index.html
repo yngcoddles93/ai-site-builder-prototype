@@ -396,7 +396,7 @@ renderHistoryList();
 
   } catch (error) {
     console.error(error);
-    statusText.textContent = "Update failed.";
+    statusText.textContent = "Update failed: " + error.message;
   }
 }
     loadSavedSite();
