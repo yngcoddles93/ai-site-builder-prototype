@@ -376,12 +376,18 @@ renderHistoryList();
       })
     });
 
-    const data = await response.json();
+    const rawText = await response.text();
+let data = {};
 
-    if (!response.ok) {
-      throw new Error(data.error || "Update failed.");
-    }
+try {
+  data = JSON.parse(rawText);
+} catch {
+  throw new Error(rawText || "Update failed.");
+}
 
+if (!response.ok) {
+  throw new Error(data.error || "Update failed.");
+}
     siteData = {
       ...siteData,
       ...data
