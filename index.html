@@ -252,7 +252,17 @@ function restoreVersion(index) {
 
   if (!history[index]) return;
 
-  siteData = history[index].data;
+  const restored = history[index].data || {};
+
+  siteData = {
+    heroTitle: restored.heroTitle || "Business Website",
+    heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
+    services: restored.services || [],
+    features: restored.features || [],
+    about: restored.about || "",
+    contact: restored.contact || restored.contactText || ""
+  };
+
   saveCurrentSite();
   renderSite(siteData);
   renderHistoryList();
