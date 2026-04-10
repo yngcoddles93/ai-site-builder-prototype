@@ -223,6 +223,10 @@ function saveVersionBeforeChange() {
 function getVersionHistory() {
   return JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
 }
+    function clearVersionHistory() {
+  localStorage.removeItem(SITE_HISTORY_KEY);
+  renderHistoryList();
+}
 function renderHistoryList() {
   const historyList = document.getElementById("historyList");
   const history = getVersionHistory();
