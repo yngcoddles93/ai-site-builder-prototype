@@ -339,11 +339,7 @@ renderSite(siteData);
 saveCurrentSite();
 renderHistoryList();
 
-        document.getElementById("contactBox").innerHTML = `
-          <strong>${data.contactHeading || "Get in Touch"}</strong><br><br>
-          ${data.contactText || "Add your phone, email, and contact form here."}
-        `;
-
+    
         previewBox.style.display = "block";
         statusText.textContent = "Done.";
       } catch (error) {
