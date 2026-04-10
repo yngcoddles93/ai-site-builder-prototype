@@ -199,7 +199,30 @@ function loadSavedSite() {
 
 function saveVersionBeforeChange() {
   const history = JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+function renderHistoryList() {
+  const historyList = document.getElementById("historyList");
+  const history = getVersionHistory();
 
+  if (!historyList) return;
+
+  if (history.length === 0) {
+    historyList.innerHTML = "<p>No saved versions yet.</p>";
+    return;
+  }
+
+  historyList.innerHTML = history
+    .map((version, index) => {
+      const date = new Date(version.timestamp).toLocaleString();
+
+      return `
+        <div class="history-item">
+          <span>${date}</span>
+          <button onclick="restoreVersion(${index})">Restore</button>
+        </div>
+      `;
+    })
+    .join("");
+}
   history.unshift({
     timestamp: new Date().toISOString(),
     data: JSON.parse(JSON.stringify(siteData))
