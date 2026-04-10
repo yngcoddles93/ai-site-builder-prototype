@@ -141,6 +141,11 @@
     <br />
     <button onclick="generateSite()">Generate Website</button>
 
+<br /><br />
+
+<textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
+<br />
+<button onclick="modifySite()">Modify Website</button>
     <div class="status" id="statusText"></div>
 
     <div class="preview" id="previewBox" style="display:none;">
@@ -227,11 +232,45 @@
         statusText.textContent = "Error: " + error.message;
       }
     }
+    async function modifySite() {
+  const editPrompt = document.getElementById("editPrompt").value.trim();
+  const statusText = document.getElementById("statusText");
+
+  if (!editPrompt) {
+    statusText.textContent = "Enter something to modify first.";
+    return;
+  }
+
+  statusText.textContent = "Updating website...";
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prompt: "Modify the existing website with this instruction: " + editPrompt
+      })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("heroTitle").textContent = data.heroTitle || "Business Website";
+    document.getElementById("heroSubtitle").textContent = data.heroSubtitle || "A strong modern website built from your prompt.";
+
+    makeCards(data.services || [], "servicesGrid");
+    makeCards(data.features || [], "featuresGrid");
+
+    document.getElementById("contactBox").innerHTML =
+      "<strong>" + (data.contactHeading || "Get in Touch") + "</strong><br><br>" +
+      (data.contactText || "Add your phone, email, and contact form here.");
+
+    statusText.textContent = "Website updated.";
+  } catch (error) {
+    statusText.textContent = "Update failed.";
+  }
+}
   </script>
 </body>
 </html>
-<br /><br />
-
-<textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
-<br />
-<button onclick="modifySite()">Modify Website</button>
