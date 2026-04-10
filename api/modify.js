@@ -1,66 +1,96 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    const { prompt, siteData } = req.body || {};
+    const { prompt, siteData } = req.body;
 
     if (!prompt || !siteData) {
       return res.status(400).json({
-        error: "Both prompt and siteData are required."
+        error: "Both prompt and siteData are required"
       });
     }
 
-    const systemPrompt = `
-You are editing an existing business website.
+    const aiPrompt = `
+You are editing an existing website.
 
+Return ONLY valid JSON.
 Return ONLY the fields that should change.
 Do NOT rewrite the full website.
 Do NOT include unchanged fields.
-Return valid JSON only.
 
 Allowed fields:
-heroTitle
-heroSubtitle
-services
-features
-about
-contact
+- heroTitle
+- heroSubtitle
+- services
+- features
+- about
+- contact
 
-If no change is needed return {}.
-`;
+Current website data:
+${JSON.stringify(siteData, null, 2)}
 
-    const userPrompt = `
 User request:
 ${prompt}
 
-Current site:
-${JSON.stringify(siteData, null, 2)}
+Examples:
+
+If the user says "make the title more premium", return:
+{
+  "heroTitle": "Luxury Mobile Detailing"
+}
+
+If the user says "change the subtitle", return:
+{
+  "heroSubtitle": "Premium detailing brought directly to your driveway."
+}
+
+If the user says "add ceramic coating to services", return:
+{
+  "services": [
+    { "title": "Ceramic Coating", "description": "Long-lasting paint protection and gloss." }
+  ]
+}
+
+If no change is needed, return:
+{}
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      temperature: 0.4,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ]
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-5.4",
+        input: aiPrompt
+      })
     });
 
-    let raw = completion.choices[0].message.content || "{}";
-    raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+    const result = await response.json();
 
-    let updates;
+    if (!response.ok) {
+      console.error("OpenAI API error:", result);
+      return res.status(500).json({
+        error: result.error?.message || "OpenAI request failed"
+      });
+    }
+
+    const outputText =
+      result.output?.[0]?.content?.[0]?.text ||
+      result.output_text ||
+      "";
+
+    let parsed;
 
     try {
-      updates = JSON.parse(raw);
-    } catch {
+      parsed = JSON.parse(outputText);
+    } catch (parseError) {
+      console.error("JSON parse error:", outputText);
       return res.status(500).json({
-        error: "Invalid JSON returned from AI",
-        raw
+        error: "AI returned an invalid format. Try again."
       });
     }
 
@@ -76,16 +106,14 @@ ${JSON.stringify(siteData, null, 2)}
     const cleanedUpdates = {};
 
     for (const key of allowedKeys) {
-      if (updates[key] !== undefined) {
-        cleanedUpdates[key] = updates[key];
+      if (parsed[key] !== undefined) {
+        cleanedUpdates[key] = parsed[key];
       }
     }
 
     return res.status(200).json(cleanedUpdates);
   } catch (error) {
-    console.error("Modify failed:", error);
-    return res.status(500).json({
-      error: error.message || "Modify failed"
-    });
+    console.error("Server error:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 }
