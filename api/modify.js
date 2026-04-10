@@ -6,7 +6,7 @@ const openai = new OpenAI({
 
 export default async function handler(req, res) {
   try {
-    const { prompt, siteData } = req.body;
+    const { prompt, siteData } = req.body || {};
 
     if (!prompt || !siteData) {
       return res.status(400).json({
@@ -27,6 +27,7 @@ heroTitle
 heroSubtitle
 services
 features
+about
 contact
 
 If no change is needed return {}.
@@ -68,6 +69,7 @@ ${JSON.stringify(siteData, null, 2)}
       "heroSubtitle",
       "services",
       "features",
+      "about",
       "contact"
     ];
 
@@ -81,9 +83,9 @@ ${JSON.stringify(siteData, null, 2)}
 
     return res.status(200).json(cleanedUpdates);
   } catch (error) {
-    console.error(error);
+    console.error("Modify failed:", error);
     return res.status(500).json({
-      error: "Modify failed"
+      error: error.message || "Modify failed"
     });
   }
 }
