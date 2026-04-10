@@ -252,7 +252,7 @@ function restoreVersion(index) {
   renderSite(siteData);
   renderHistoryList();
 }
-    function renderSite(data) {
+   function renderSite(data) {
   document.getElementById("heroTitle").textContent =
     data.heroTitle || "Business Website";
 
@@ -264,9 +264,19 @@ function restoreVersion(index) {
 
   const aboutText = document.getElementById("aboutText");
   const contactText = document.getElementById("contactText");
+  const previewBox = document.getElementById("previewBox");
 
-  if (aboutText) aboutText.textContent = data.about || "";
-  if (contactText) contactText.textContent = data.contact || "";
+  if (aboutText) {
+    aboutText.textContent = data.about || "Tell visitors about your business here.";
+  }
+
+  if (contactText) {
+    contactText.textContent = data.contact || "Add your phone, email, and contact details here.";
+  }
+
+  if (previewBox) {
+    previewBox.style.display = "block";
+  }
 }
     function makeCards(items, targetId) {
       const target = document.getElementById(targetId);
