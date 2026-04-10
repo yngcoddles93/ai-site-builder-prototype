@@ -4,57 +4,35 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { prompt, siteData } = req.body;
+    const { prompt } = req.body;
 
-    if (!prompt || !siteData) {
-      return res.status(400).json({
-        error: "Both prompt and siteData are required"
-      });
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
     }
 
     const aiPrompt = `
-You are editing an existing website.
+You are helping generate a simple website preview.
 
-Return ONLY valid JSON.
-Return ONLY the fields that should change.
-Do NOT rewrite the full website.
-Do NOT include unchanged fields.
-
-Allowed fields:
-- heroTitle
-- heroSubtitle
-- services
-- features
-- about
-- contact
-
-Current website data:
-${JSON.stringify(siteData, null, 2)}
-
-User request:
-${prompt}
-
-Examples:
-
-If the user says "make the title more premium", return:
+Return ONLY valid JSON with this exact structure:
 {
-  "heroTitle": "Luxury Mobile Detailing"
-}
-
-If the user says "change the subtitle", return:
-{
-  "heroSubtitle": "Premium detailing brought directly to your driveway."
-}
-
-If the user says "add ceramic coating to services", return:
-{
+  "heroTitle": "string",
+  "heroSubtitle": "string",
   "services": [
-    { "title": "Ceramic Coating", "description": "Long-lasting paint protection and gloss." }
-  ]
+    { "title": "string", "description": "string" },
+    { "title": "string", "description": "string" },
+    { "title": "string", "description": "string" }
+  ],
+  "features": [
+    { "title": "string", "description": "string" },
+    { "title": "string", "description": "string" },
+    { "title": "string", "description": "string" }
+  ],
+  "about": "string",
+  "contact": "string"
 }
 
-If no change is needed, return:
-{}
+Make the content fit this website request:
+${prompt}
 `;
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -94,24 +72,7 @@ If no change is needed, return:
       });
     }
 
-    const allowedKeys = [
-      "heroTitle",
-      "heroSubtitle",
-      "services",
-      "features",
-      "about",
-      "contact"
-    ];
-
-    const cleanedUpdates = {};
-
-    for (const key of allowedKeys) {
-      if (parsed[key] !== undefined) {
-        cleanedUpdates[key] = parsed[key];
-      }
-    }
-
-    return res.status(200).json(cleanedUpdates);
+    return res.status(200).json(parsed);
   } catch (error) {
     console.error("Server error:", error);
     return res.status(500).json({ error: "Server error" });
