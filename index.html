@@ -346,7 +346,7 @@ renderHistoryList();
         statusText.textContent = "Error: " + error.message;
       }
     }
-   async function modifySite() {
+  async function modifySite() {
   const editPrompt = document.getElementById("editPrompt").value.trim();
   const statusText = document.getElementById("statusText");
 
@@ -392,6 +392,8 @@ renderHistoryList();
     renderHistoryList();
 
     statusText.textContent = "Website updated.";
+    document.getElementById("editPrompt").value = "";
+
   } catch (error) {
     console.error(error);
     statusText.textContent = "Update failed.";
