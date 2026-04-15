@@ -435,16 +435,23 @@ renderHistoryList();
     statusText.textContent = "Update failed: " + error.message;
   }
 }
- function setEditSection(section) {
+function setEditSection(section) {
   currentEditSection = section;
   console.log("Editing section:", section);
 
   const buttons = document.querySelectorAll("#editSectionButtons button");
-  buttons.forEach(button => button.classList.remove("active-edit-section"));
+
+  buttons.forEach(button => {
+    button.style.background = "#3b82f6";
+    button.style.boxShadow = "none";
+    button.style.transform = "scale(1)";
+  });
 
   const activeButton = document.getElementById(`btn-${section}`);
   if (activeButton) {
-    activeButton.classList.add("active-edit-section");
+    activeButton.style.background = "#0f3aa9";
+    activeButton.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.35)";
+    activeButton.style.transform = "scale(0.98)";
   }
 }
     setEditSection("all");
