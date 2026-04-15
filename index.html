@@ -430,6 +430,10 @@ renderHistoryList();
     statusText.textContent = "Update failed: " + error.message;
   }
 }
+    function setEditSection(section) {
+  currentEditSection = section;
+  console.log("Editing section:", section);
+}
     loadSavedSite();
 renderHistoryList();
   </script>
