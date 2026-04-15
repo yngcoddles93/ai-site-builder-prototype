@@ -143,10 +143,19 @@
 
 <br /><br />
 
+<div style="margin-bottom:10px;">
+  <button onclick="setEditSection('hero')">Edit Hero</button>
+  <button onclick="setEditSection('services')">Edit Services</button>
+  <button onclick="setEditSection('features')">Edit Features</button>
+  <button onclick="setEditSection('about')">Edit About</button>
+  <button onclick="setEditSection('contact')">Edit Contact</button>
+  <button onclick="setEditSection('all')">Edit Entire Site</button>
+</div>
+
 <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
 <br />
 <button onclick="modifySite()">Modify Website</button>
-    <div class="status" id="statusText"></div>
+<div class="status" id="statusText"></div>
 
    <div class="preview" id="previewBox" style="display:none;">
   <div class="hero">
