@@ -267,6 +267,9 @@ function restoreVersion(index) {
 
   if (!history[index]) return;
 
+  // Save current version BEFORE restoring older one
+  saveVersionBeforeChange();
+
   const restored = history[index].data || {};
 
   siteData = {
