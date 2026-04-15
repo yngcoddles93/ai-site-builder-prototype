@@ -385,10 +385,11 @@ renderHistoryList();
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        prompt: editPrompt,
-        siteData: siteData
-      })
+    body: JSON.stringify({
+  prompt: editPrompt,
+  siteData: siteData,
+  section: currentEditSection
+})
     });
 
     const rawText = await response.text();
