@@ -59,8 +59,12 @@ User request:
 The request may include spelling mistakes, shorthand, or informal wording.
 Interpret the user's intent intelligently and correct spelling if necessary before applying edits.
 
+User request:
 ${prompt}
 
+The request may include spelling mistakes, shorthand, or informal wording.
+Interpret the user's intent intelligently and correct spelling if necessary before applying edits.
+Always return polished, professional marketing-quality language.
 Examples:
 
 If section is "hero" and the user says "make the title more premium", return:
