@@ -130,6 +130,11 @@
       color: #cbd5e1;
       line-height: 1.7;
     }
+    #editSectionButtons button.active-edit-section {
+  background: #1e40af;
+  transform: scale(0.98);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
   </style>
 </head>
 <body>
@@ -442,6 +447,7 @@ renderHistoryList();
     activeButton.classList.add("active-edit-section");
   }
 }
+    setEditSection("all");
     loadSavedSite();
 renderHistoryList();
   </script>
