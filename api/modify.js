@@ -56,6 +56,9 @@ Current website data:
 ${JSON.stringify(siteData, null, 2)}
 
 User request:
+The request may include spelling mistakes, shorthand, or informal wording.
+Interpret the user's intent intelligently and correct spelling if necessary before applying edits.
+
 ${prompt}
 
 Examples:
