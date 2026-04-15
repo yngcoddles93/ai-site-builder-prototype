@@ -4,42 +4,38 @@ export default async function handler(req, res) {
   }
 
   try {
-   const { prompt, siteData, section } = req.body;
+    const { prompt, siteData, section } = req.body;
 
-   if (!prompt || !siteData || !section) {
-  return res.status(400).json({
-    error: "Prompt, siteData, and section are required"
-  });
-}
     if (!prompt || !siteData || !section) {
-  return res.status(400).json({
-    error: "Prompt, siteData, and section are required"
-  });
-}
+      return res.status(400).json({
+        error: "Prompt, siteData, and section are required"
+      });
+    }
 
-const sectionFieldMap = {
-  hero: ["heroTitle", "heroSubtitle"],
-  services: ["services"],
-  features: ["features"],
-  about: ["about"],
-  contact: ["contact"],
-  all: [
-    "heroTitle",
-    "heroSubtitle",
-    "services",
-    "features",
-    "about",
-    "contact"
-  ]
-};
+    const sectionFieldMap = {
+      hero: ["heroTitle", "heroSubtitle"],
+      services: ["services"],
+      features: ["features"],
+      about: ["about"],
+      contact: ["contact"],
+      all: [
+        "heroTitle",
+        "heroSubtitle",
+        "services",
+        "features",
+        "about",
+        "contact"
+      ]
+    };
 
-const allowedKeys = sectionFieldMap[section];
+    const allowedKeys = sectionFieldMap[section];
 
-if (!allowedKeys) {
-  return res.status(400).json({
-    error: "Invalid section selected"
-  });
-}
+    if (!allowedKeys) {
+      return res.status(400).json({
+        error: "Invalid section selected"
+      });
+    }
+
     const aiPrompt = `
 You are editing an existing website.
 
@@ -48,13 +44,13 @@ Return ONLY the fields that should change.
 Do NOT rewrite the full website.
 Do NOT include unchanged fields.
 
-Allowed fields:
-- heroTitle
-- heroSubtitle
-- services
-- features
-- about
-- contact
+Selected section to edit:
+${section}
+
+Only modify fields in this section:
+${allowedKeys.join(", ")}
+
+Do not modify anything outside these fields.
 
 Current website data:
 ${JSON.stringify(siteData, null, 2)}
@@ -64,17 +60,17 @@ ${prompt}
 
 Examples:
 
-If the user says "make the title more premium", return:
+If section is "hero" and the user says "make the title more premium", return:
 {
   "heroTitle": "Luxury Mobile Detailing"
 }
 
-If the user says "change the subtitle", return:
+If section is "hero" and the user says "change the subtitle", return:
 {
   "heroSubtitle": "Premium detailing brought directly to your driveway."
 }
 
-If the user says "add ceramic coating to services", return:
+If section is "services" and the user says "add ceramic coating", return:
 {
   "services": [
     { "title": "Ceramic Coating", "description": "Long-lasting paint protection and gloss." }
@@ -121,15 +117,6 @@ If no change is needed, return:
         error: "AI returned an invalid format. Try again."
       });
     }
-
-    const allowedKeys = [
-      "heroTitle",
-      "heroSubtitle",
-      "services",
-      "features",
-      "about",
-      "contact"
-    ];
 
     const cleanedUpdates = {};
 
