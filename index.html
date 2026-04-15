@@ -430,9 +430,17 @@ renderHistoryList();
     statusText.textContent = "Update failed: " + error.message;
   }
 }
-    function setEditSection(section) {
+ function setEditSection(section) {
   currentEditSection = section;
   console.log("Editing section:", section);
+
+  const buttons = document.querySelectorAll("#editSectionButtons button");
+  buttons.forEach(button => button.classList.remove("active-edit-section"));
+
+  const activeButton = document.getElementById(`btn-${section}`);
+  if (activeButton) {
+    activeButton.classList.add("active-edit-section");
+  }
 }
     loadSavedSite();
 renderHistoryList();
