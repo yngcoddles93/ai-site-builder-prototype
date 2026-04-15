@@ -4,14 +4,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { prompt, siteData } = req.body;
+   const { prompt, siteData, section } = req.body;
 
-    if (!prompt || !siteData) {
-      return res.status(400).json({
-        error: "Both prompt and siteData are required"
-      });
-    }
+   if (!prompt || !siteData || !section) {
+  return res.status(400).json({
+    error: "Prompt, siteData, and section are required"
+  });
+}
+    if (!prompt || !siteData || !section) {
+  return res.status(400).json({
+    error: "Prompt, siteData, and section are required"
+  });
+}
 
+const sectionFieldMap = {
+  hero: ["heroTitle", "heroSubtitle"],
+  services: ["services"],
+  features: ["features"],
+  about: ["about"],
+  contact: ["contact"],
+  all: [
+    "heroTitle",
+    "heroSubtitle",
+    "services",
+    "features",
+    "about",
+    "contact"
+  ]
+};
+
+const allowedKeys = sectionFieldMap[section];
+
+if (!allowedKeys) {
+  return res.status(400).json({
+    error: "Invalid section selected"
+  });
+}
     const aiPrompt = `
 You are editing an existing website.
 
