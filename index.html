@@ -427,7 +427,7 @@ renderHistoryList();
     renderSite(siteData);
     saveCurrentSite();
     renderHistoryList();
-
+document.getElementById("exportBtn").style.display = "inline-block";
     statusText.textContent = "Website updated.";
     document.getElementById("editPrompt").value = "";
   } catch (error) {
