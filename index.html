@@ -362,7 +362,9 @@ function restoreVersion(index) {
           throw new Error(data.error || "Something went wrong.");
         }
 
-       siteData = {
+     saveVersionBeforeChange();
+
+siteData = {
   heroTitle: data.heroTitle || "Business Website",
   heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
   services: data.services || [],
