@@ -205,7 +205,6 @@
     about: "",
     contact: ""
   };
-};
 let currentEditSection = "all";
 const SITE_DATA_KEY = "siteData";
 const SITE_HISTORY_KEY = "siteHistory";
@@ -462,11 +461,12 @@ function setEditSection(section) {
     activeButton.style.transform = "scale(0.98)";
   }
 }
-   renderSite(siteData);
-saveCurrentSite();
+
+setEditSection("all");
+loadSavedSite();
 renderHistoryList();
 
-document.getElementById("exportBtn").style.display = "inline-block";
+  
    function exportWebsite() {
   const heroTitle = siteData.heroTitle || "Business Website";
   const heroSubtitle = siteData.heroSubtitle || "";
