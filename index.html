@@ -454,9 +454,90 @@ function setEditSection(section) {
     activeButton.style.transform = "scale(0.98)";
   }
 }
-    setEditSection("all");
-    loadSavedSite();
+   renderSite(siteData);
+saveCurrentSite();
 renderHistoryList();
+
+document.getElementById("exportBtn").style.display = "inline-block";
+    function exportWebsite() {
+  const heroTitle = siteData.heroTitle || "Business Website";
+  const heroSubtitle = siteData.heroSubtitle || "";
+
+  const services = siteData.services.map(item => `
+    <div class="card">
+      <h4>${item.title}</h4>
+      <p>${item.description}</p>
+    </div>
+  `).join("");
+
+  const features = siteData.features.map(item => `
+    <div class="card">
+      <h4>${item.title}</h4>
+      <p>${item.description}</p>
+    </div>
+  `).join("");
+
+  const about = siteData.about || "";
+  const contact = siteData.contact || "";
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${heroTitle}</title>
+<style>
+body { font-family: Arial; margin:0; background:#f5f5f5; }
+.hero { background:#111; color:white; padding:80px 20px; text-align:center; }
+.section { padding:60px 20px; max-width:1000px; margin:auto; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+.card { background:white; padding:20px; border-radius:12px; }
+footer { background:#111; color:white; text-align:center; padding:30px; }
+</style>
+</head>
+
+<body>
+
+<section class="hero">
+<h1>${heroTitle}</h1>
+<p>${heroSubtitle}</p>
+</section>
+
+<section class="section">
+<h2>Services</h2>
+<div class="cards">${services}</div>
+</section>
+
+<section class="section">
+<h2>Why Choose Us</h2>
+<div class="cards">${features}</div>
+</section>
+
+<section class="section">
+<h2>About</h2>
+<p>${about}</p>
+</section>
+
+<section class="section">
+<h2>Contact</h2>
+<p>${contact}</p>
+</section>
+
+<footer>
+Exported from AI Website Builder
+</footer>
+
+</body>
+</html>
+`;
+
+  const blob = new Blob([html], { type: "text/html" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "index.html";
+  link.click();
+}
   </script>
 </body>
 </html>
