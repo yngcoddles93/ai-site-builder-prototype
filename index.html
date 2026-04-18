@@ -134,71 +134,77 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Describe the website you want.</h1>
-    <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
+ <div class="container">
+  <h1>Describe the website you want.</h1>
+  <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
 
-    <textarea id="promptInput" placeholder="Example: Build a modern website for a mobile detailing business with a dark theme, services, pricing, testimonials, and contact section."></textarea>
-    <br />
-    <button onclick="generateSite()">Generate Website</button>
+  <textarea id="promptInput" placeholder="Example: Build a modern website for a mobile detailing business with a dark theme, services, pricing, testimonials, and contact section."></textarea>
+  <br />
+  <button onclick="generateSite()">Generate Website</button>
 
-<br /><br />
+  <br /><br />
 
-<div style="margin-bottom:10px;" id="editSectionButtons">
-  <button id="btn-hero" onclick="setEditSection('hero')">Edit Hero</button>
-  <button id="btn-services" onclick="setEditSection('services')">Edit Services</button>
-  <button id="btn-features" onclick="setEditSection('features')">Edit Features</button>
-  <button id="btn-about" onclick="setEditSection('about')">Edit About</button>
-  <button id="btn-contact" onclick="setEditSection('contact')">Edit Contact</button>
-  <button id="btn-all" onclick="setEditSection('all')">Edit Entire Site</button>
-  <button id="exportBtn" style="display:none;">Export Website</button>
+  <div style="margin-bottom:10px;" id="editSectionButtons">
+    <button id="btn-hero" onclick="setEditSection('hero')">Edit Hero</button>
+    <button id="btn-services" onclick="setEditSection('services')">Edit Services</button>
+    <button id="btn-features" onclick="setEditSection('features')">Edit Features</button>
+    <button id="btn-about" onclick="setEditSection('about')">Edit About</button>
+    <button id="btn-contact" onclick="setEditSection('contact')">Edit Contact</button>
+    <button id="btn-all" onclick="setEditSection('all')">Edit Entire Site</button>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
+  </div>
+
+  <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
+  <br />
+  <button onclick="modifySite()">Modify Website</button>
+  <div class="status" id="statusText"></div>
+
+  <div class="preview" id="previewBox" style="display:none;">
+    <div class="hero">
+      <h2 id="heroTitle">Your website title will appear here</h2>
+      <p id="heroSubtitle">Your AI-generated subtitle will appear here.</p>
+    </div>
+
+    <div class="section">
+      <h3>Services</h3>
+      <div class="cards" id="servicesGrid"></div>
+    </div>
+
+    <div class="section">
+      <h3>Why Choose Us</h3>
+      <div class="cards" id="featuresGrid"></div>
+    </div>
+
+    <div class="section">
+      <h3>About</h3>
+      <p id="aboutText">Your business description will appear here.</p>
+    </div>
+
+    <div class="section">
+      <h3>Contact</h3>
+      <p id="contactText">Your contact information will appear here.</p>
+    </div>
+  </div>
 </div>
 
-<textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
-<br />
-<button onclick="modifySite()">Modify Website</button>
-<div class="status" id="statusText"></div>
-
-   <div class="preview" id="previewBox" style="display:none;">
-  <div class="hero">
-    <h2 id="heroTitle">Your website title will appear here</h2>
-    <p id="heroSubtitle">Your AI-generated subtitle will appear here.</p>
-  </div>
-
-  <div class="section">
-    <h3>Services</h3>
-    <div class="cards" id="servicesGrid"></div>
-  </div>
-
-  <div class="section">
-    <h3>Why Choose Us</h3>
-    <div class="cards" id="featuresGrid"></div>
-  </div>
-
-  <div class="section">
-    <h3>About</h3>
-    <p id="aboutText">Your business description will appear here.</p>
-  </div>
-
-  <div class="section">
-    <h3>Contact</h3>
-    <p id="contactText">Your contact information will appear here.</p>
-  </div>
-</div>
-  </div>
 <div class="history-panel">
   <h3>Version History</h3>
   <button onclick="clearVersionHistory()">Clear Old History</button>
   <div id="historyList"></div>
 </div>
-  <script>
-    let siteData = {
-  heroTitle: "Business Website",
-  heroSubtitle: "A strong modern website built from your prompt.",
-  services: [],
-  features: [],
-  about: "",
-  contact: ""
+
+<script>
+  let siteData = {
+    heroTitle: "Business Website",
+    heroSubtitle: "A strong modern website built from your prompt.",
+    services: [],
+    features: [],
+    about: "",
+    contact: ""
+  };
 };
 let currentEditSection = "all";
 const SITE_DATA_KEY = "siteData";
