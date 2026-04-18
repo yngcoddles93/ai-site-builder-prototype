@@ -292,7 +292,7 @@ function restoreVersion(index) {
   renderSite(siteData);
   renderHistoryList();
 }
-   function renderSite(data) {
+  function renderSite(data) {
   document.getElementById("heroTitle").textContent =
     data.heroTitle || "Business Website";
 
@@ -317,6 +317,8 @@ function restoreVersion(index) {
   if (previewBox) {
     previewBox.style.display = "block";
   }
+
+  document.getElementById("exportBtn").style.display = "inline-block";
 }
     function makeCards(items, targetId) {
       const target = document.getElementById(targetId);
