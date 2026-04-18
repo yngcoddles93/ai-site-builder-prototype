@@ -469,7 +469,21 @@ loadSavedSite();
 renderHistoryList();
 
   
-   function exportWebsite() {
+  function downloadFile(filename, content, type = "text/plain") {
+  const blob = new Blob([content], { type });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  window.URL.revokeObjectURL(url);
+}
+
+function exportWebsite() {
   const heroTitle = siteData.heroTitle || "Business Website";
   const heroSubtitle = siteData.heroSubtitle || "";
 
@@ -496,42 +510,7 @@ renderHistoryList();
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${heroTitle}</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f5f5f5;
-      color: #111;
-    }
-    .hero {
-      background: #111;
-      color: white;
-      padding: 80px 20px;
-      text-align: center;
-    }
-    .section {
-      padding: 60px 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    footer {
-      background: #111;
-      color: white;
-      text-align: center;
-      padding: 30px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <section class="hero">
@@ -565,17 +544,51 @@ renderHistoryList();
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: "text/html" });
-  const url = window.URL.createObjectURL(blob);
+  const css = `body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+  color: #111;
+}
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "index.html";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+.hero {
+  background: #111;
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+}
 
-  window.URL.revokeObjectURL(url);
+.section {
+  padding: 60px 20px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+footer {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 30px;
+}`;
+
+  downloadFile("index.html", html, "text/html");
+
+  setTimeout(() => {
+    downloadFile("style.css", css, "text/css");
+  }, 200);
 }
   </script>
 </body>
