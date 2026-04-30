@@ -62,26 +62,76 @@ Image support:
 
 If the user asks to add, change, replace, or remove a hero image, return heroImageUrl.
 
-For now, always use this working hero image URL when the user asks for any car, Porsche, detailing, or automotive hero image:
+Do NOT use source.unsplash.com.
 
+Use one of these approved working image URLs based on the user's request:
+
+Car, Porsche, vehicle, luxury car, automotive:
 {
   "heroImageUrl": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900"
 }
 
-If the user asks to remove the hero image, return:
+Car detailing, washing, cleaning, polishing:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=900"
+}
 
+Restaurant, food, dining:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900"
+}
+
+Gym, fitness, workout:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900"
+}
+
+Landscaping, lawn care, outdoor service:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=900"
+}
+
+Real estate, home, property:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900"
+}
+
+Construction, contractor, remodeling:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900"
+}
+
+Spa, beauty, salon:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900"
+}
+
+Medical, clinic, healthcare:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=900"
+}
+
+Technology, software, AI, startup:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900"
+}
+
+If the user asks for a hero image but the business type does not clearly match one above, use this general business image:
+{
+  "heroImageUrl": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900"
+}
+
+If the user asks to remove the hero image, return:
 {
   "heroImageUrl": ""
 }
 
 If the user asks to remove the logo, return:
-
 {
   "logoUrl": ""
 }
 
 If the user does not ask for images, do not include logoUrl or heroImageUrl.
-
 Current website data:
 ${JSON.stringify(siteData, null, 2)}
 
