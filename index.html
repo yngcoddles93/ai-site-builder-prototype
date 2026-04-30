@@ -334,22 +334,30 @@
 let generatedLogoOptions = [];
 
 async function suggestLogos() {
-  alert("Suggest logos clicked");
-  const prompt = document.getElementById("logoPromptInput").value.trim();
+  const promptInput = document.getElementById("logoPromptInput");
   const grid = document.getElementById("logoOptionsGrid");
   const statusText = document.getElementById("statusText");
+
+  console.log("Prompt element:", promptInput);
+
+  if (!promptInput) {
+    statusText.textContent = "Logo prompt input not found.";
+    return;
+  }
+
+  const prompt = promptInput.value.trim();
 
   if (!prompt) {
     statusText.textContent = "Describe the logo style you want first.";
     return;
   }
 
-  if (!grid) return;
-
   statusText.textContent = "Generating logo options...";
   grid.innerHTML = "<p>Generating logos...</p>";
 
   try {
+    console.log("Sending request to /api/generate-logo...");
+
     const response = await fetch("/api/generate-logo", {
       method: "POST",
       headers: {
@@ -361,7 +369,11 @@ async function suggestLogos() {
       })
     });
 
+    console.log("Response received:", response);
+
     const data = await response.json();
+
+    console.log("Parsed data:", data);
 
     if (!response.ok) {
       throw new Error(data.error || "Logo generation failed.");
@@ -394,7 +406,6 @@ async function suggestLogos() {
     grid.innerHTML = `<p style="color:#fca5a5;">${error.message}</p>`;
   }
 }
-
 function applySuggestedLogo(index) {
   const selectedLogo = generatedLogoOptions[index];
 
