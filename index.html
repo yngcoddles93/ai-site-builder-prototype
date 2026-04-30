@@ -331,15 +331,17 @@
     };
 
 
+let generatedLogoOptions = [];
+
 async function suggestLogos() {
   const prompt = document.getElementById("logoPromptInput").value.trim();
   const grid = document.getElementById("logoOptionsGrid");
   const statusText = document.getElementById("statusText");
 
- if (!prompt) {
-  statusText.textContent = "Describe the logo style you want first.";
-  return;
-}
+  if (!prompt) {
+    statusText.textContent = "Describe the logo style you want first.";
+    return;
+  }
 
   if (!grid) return;
 
@@ -364,39 +366,48 @@ async function suggestLogos() {
       throw new Error(data.error || "Logo generation failed.");
     }
 
-    const logos = data.logos || [];
+    generatedLogoOptions = data.logos || [];
 
-    if (logos.length === 0) {
+    if (generatedLogoOptions.length === 0) {
       throw new Error("No logos were returned.");
     }
 
-    grid.innerHTML = logos
+    grid.innerHTML = generatedLogoOptions
       .map(
-        logo => `
-        <div class="logo-option">
-          <img src="${logo.url}" />
-          <button onclick="applySuggestedLogo('${logo.url}')">
-            Apply Logo
-          </button>
-        </div>
-      `
+        (logo, index) => `
+          <div class="logo-option">
+            <img src="${logo.url}" alt="${logo.name}" />
+            <p>${logo.name}</p>
+            <button onclick="applySuggestedLogo(${index})">
+              Apply Logo
+            </button>
+          </div>
+        `
       )
       .join("");
 
     statusText.textContent = "Logo options generated.";
   } catch (error) {
-    console.error(error);
-    statusText.textContent = "Logo generation failed.";
-    grid.innerHTML = "";
+    console.error("Logo generation error:", error);
+    statusText.textContent = "Logo generation failed: " + error.message;
+    grid.innerHTML = `<p style="color:#fca5a5;">${error.message}</p>`;
   }
 }
-function applySuggestedLogo(url) {
+
+function applySuggestedLogo(index) {
+  const selectedLogo = generatedLogoOptions[index];
+
+  if (!selectedLogo) {
+    document.getElementById("statusText").textContent = "No logo selected.";
+    return;
+  }
+
   saveVersionBeforeChange();
 
-  siteData.logoUrl = url;
+  siteData.logoUrl = selectedLogo.url;
 
   const logoInput = document.getElementById("logoUrlInput");
-  if (logoInput) logoInput.value = url;
+  if (logoInput) logoInput.value = selectedLogo.url;
 
   saveCurrentSite();
   renderSite(siteData);
