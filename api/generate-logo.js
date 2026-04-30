@@ -64,16 +64,23 @@ website-ready
 
     // Upload to Vercel Blob
     const uploadResponse = await fetch(
-      "https://blob.vercel-storage.com/upload",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-          "Content-Type": "image/png"
-        },
-        body: imageBuffer
-      }
-    );
+  "https://blob.vercel-storage.com/upload",
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+      "Content-Type": "image/png",
+      "x-vercel-filename": `logo-${Date.now()}.png`
+    },
+    body: imageBuffer
+  }
+);
+
+const blob = await uploadResponse.json();
+
+if (!blob.url) {
+  throw new Error("Blob upload failed");
+}
 
     const blob = await uploadResponse.json();
 
