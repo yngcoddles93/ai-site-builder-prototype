@@ -33,7 +33,7 @@ Logo requirements:
 - minimal text
 - suitable for a website header
 - high contrast
-- plain or transparent-looking background
+- plain background
 - do not include extra words besides the business name or initials
 - avoid tiny unreadable text
 `;
