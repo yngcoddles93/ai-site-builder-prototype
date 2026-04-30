@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     }
 
     const sectionFieldMap = {
-      hero: ["heroTitle", "heroSubtitle"],
+      hero: ["heroTitle", "heroSubtitle", "logoUrl", "heroImageUrl"],
       services: ["services"],
       features: ["features"],
       about: ["about"],
@@ -24,7 +24,9 @@ export default async function handler(req, res) {
         "services",
         "features",
         "about",
-        "contact"
+        "contact",
+        "logoUrl",
+        "heroImageUrl"
       ]
     };
 
@@ -52,12 +54,45 @@ ${allowedKeys.join(", ")}
 
 Do not modify anything outside these fields.
 
+Allowed image fields:
+- logoUrl
+- heroImageUrl
+
+Image support:
+If the user asks to add, change, replace, or remove a hero image, use heroImageUrl.
+If the user asks to add, change, replace, or remove a logo image, use logoUrl.
+
+For simple image requests, create an Unsplash Source URL using keywords from the user's request.
+
+Use this format:
+https://source.unsplash.com/900x600/?keyword,keyword
+
+Examples:
+
+If the user says "add a picture of a Porsche 911 to the right side of the hero", return:
+{
+  "heroImageUrl": "https://source.unsplash.com/900x600/?porsche,911"
+}
+
+If the user says "make the hero image a luxury car detail", return:
+{
+  "heroImageUrl": "https://source.unsplash.com/900x600/?luxury,car,detailing"
+}
+
+If the user says "remove the hero image", return:
+{
+  "heroImageUrl": ""
+}
+
+If the user says "remove the logo", return:
+{
+  "logoUrl": ""
+}
+
+If the user does not ask for images, do not include logoUrl or heroImageUrl.
+
 Current website data:
 ${JSON.stringify(siteData, null, 2)}
-
-User request:
-The request may include spelling mistakes, shorthand, or informal wording.
-Interpret the user's intent intelligently and correct spelling if necessary before applying edits.
 
 User request:
 ${prompt}
@@ -65,6 +100,7 @@ ${prompt}
 The request may include spelling mistakes, shorthand, or informal wording.
 Interpret the user's intent intelligently and correct spelling if necessary before applying edits.
 Always return polished, professional marketing-quality language.
+
 Examples:
 
 If section is "hero" and the user says "make the title more premium", return:
