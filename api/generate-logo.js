@@ -13,33 +13,27 @@ export default async function handler(req, res) {
     }
 
     const businessName = siteData?.heroTitle || "Business Logo";
-    const businessDescription = siteData?.heroSubtitle || "";
 
     const logoPrompt = `
-Create a clean, professional logo concept for this business.
+Create a clean professional logo.
 
-Business name:
+Business:
 ${businessName}
 
-Business description:
-${businessDescription}
-
-User logo request:
+Style request:
 ${prompt}
 
-Logo requirements:
-- modern professional logo
-- simple icon or monogram
-- clean readable design
-- centered logo
-- minimal text
-- suitable for website header
-- high contrast
-- plain or transparent background
-- do not include extra words besides business name or initials
+Requirements:
+minimal
+centered
+modern
+simple icon or monogram
+plain background
+website-ready
 `;
 
-    const response = await fetch(
+    // Generate image from OpenAI
+    const imageResponse = await fetch(
       "https://api.openai.com/v1/images/generations",
       {
         method: "POST",
@@ -50,32 +44,53 @@ Logo requirements:
         body: JSON.stringify({
           model: "gpt-image-1",
           prompt: logoPrompt,
-          size: "1024x1024",
-          n: 4
+          size: "1024x1024"
         })
       }
     );
 
-    const result = await response.json();
+    const imageResult = await imageResponse.json();
 
-    if (!response.ok) {
-      console.error("OpenAI image error:", result);
+    if (!imageResponse.ok) {
+      console.error(imageResult);
       return res.status(500).json({
-        error: result.error?.message || "Logo generation failed"
+        error: "Logo generation failed"
       });
     }
 
-    const logos = (result.data || []).map((item, index) => ({
-      name: `Generated Logo ${index + 1}`,
-      url: `data:image/png;base64,${item.b64_json}`
-    }));
+    const base64Image = imageResult.data[0].b64_json;
 
-    return res.status(200).json({ logos });
+    const imageBuffer = Buffer.from(base64Image, "base64");
+
+    // Upload to Vercel Blob
+    const uploadResponse = await fetch(
+      "https://blob.vercel-storage.com/upload",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+          "Content-Type": "image/png"
+        },
+        body: imageBuffer
+      }
+    );
+
+    const blob = await uploadResponse.json();
+
+    return res.status(200).json({
+      logos: [
+        {
+          name: "Generated Logo",
+          url: blob.url
+        }
+      ]
+    });
 
   } catch (error) {
-    console.error("Server error:", error);
+    console.error(error);
+
     return res.status(500).json({
-      error: "Server error generating logos"
+      error: "Server error generating logo"
     });
   }
 }
