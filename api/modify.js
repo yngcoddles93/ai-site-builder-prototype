@@ -59,32 +59,23 @@ Allowed image fields:
 - heroImageUrl
 
 Image support:
-If the user asks to add, change, replace, or remove a hero image, use heroImageUrl.
-If the user asks to add, change, replace, or remove a logo image, use logoUrl.
 
-For simple image requests, create an Unsplash Source URL using keywords from the user's request.
+If the user asks to add, change, replace, or remove a hero image, return heroImageUrl.
 
-Use this format:
-Use direct images.unsplash.com URLs when possible. For car-related hero images, use:
-https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900
-Examples:
+For now, always use this working hero image URL when the user asks for any car, Porsche, detailing, or automotive hero image:
 
-If the user says "add a picture of a Porsche 911 to the right side of the hero", return:
 {
-  "heroImageUrl": "https://source.unsplash.com/900x600/?porsche,911"
+  "heroImageUrl": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900"
 }
 
-If the user says "make the hero image a luxury car detail", return:
-{
-  "heroImageUrl": "https://source.unsplash.com/900x600/?luxury,car,detailing"
-}
+If the user asks to remove the hero image, return:
 
-If the user says "remove the hero image", return:
 {
   "heroImageUrl": ""
 }
 
-If the user says "remove the logo", return:
+If the user asks to remove the logo, return:
+
 {
   "logoUrl": ""
 }
