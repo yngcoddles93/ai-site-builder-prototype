@@ -65,8 +65,8 @@ If the user asks to add, change, replace, or remove a logo image, use logoUrl.
 For simple image requests, create an Unsplash Source URL using keywords from the user's request.
 
 Use this format:
-https://source.unsplash.com/900x600/?keyword,keyword
-
+Use direct images.unsplash.com URLs when possible. For car-related hero images, use:
+https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900
 Examples:
 
 If the user says "add a picture of a Porsche 911 to the right side of the hero", return:
