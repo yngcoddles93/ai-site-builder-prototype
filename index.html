@@ -247,7 +247,7 @@
     <div style="margin-bottom:10px;">
       <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
     </div>
-<h2 style="color: yellow;">IMAGE TEST SECTION</h2>
+
     <div class="image-controls">
       <label for="logoUrlInput">Logo Image URL</label>
       <input id="logoUrlInput" placeholder="Paste logo image URL here" />
@@ -257,18 +257,19 @@
 
       <button onclick="applyImageChanges()">Apply Images</button>
     </div>
+
     <div class="logo-suggestion-box">
-  <h3>AI Logo Suggestions</h3>
+      <h3>AI Logo Suggestions</h3>
 
-  <textarea
-    id="logoPromptInput"
-    placeholder="Example: Give me premium black and gold logo options for a luxury car detailing business"
-  ></textarea>
+      <textarea
+        id="logoPromptInput"
+        placeholder="Example: Give me premium black and gold logo options for a luxury car detailing business"
+      ></textarea>
 
-  <button onclick="suggestLogos()">Suggest Logos</button>
+      <button onclick="suggestLogos()">Suggest Logos</button>
 
-  <div id="logoOptionsGrid" class="logo-options-grid"></div>
-</div>
+      <div id="logoOptionsGrid" class="logo-options-grid"></div>
+    </div>
 
     <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
     <br />
