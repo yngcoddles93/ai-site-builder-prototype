@@ -185,6 +185,42 @@
       color: #cbd5e1;
       line-height: 1.7;
     }
+    .logo-suggestion-box {
+  margin: 20px 0;
+  background: #111827;
+  border: 1px solid #1f2937;
+  padding: 18px;
+  border-radius: 14px;
+}
+
+.logo-options-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.logo-option {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+
+.logo-option img {
+  max-width: 100%;
+  height: 80px;
+  object-fit: contain;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.logo-option button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
   </style>
 </head>
 
@@ -221,6 +257,18 @@
 
       <button onclick="applyImageChanges()">Apply Images</button>
     </div>
+    <div class="logo-suggestion-box">
+  <h3>AI Logo Suggestions</h3>
+
+  <textarea
+    id="logoPromptInput"
+    placeholder="Example: Give me premium black and gold logo options for a luxury car detailing business"
+  ></textarea>
+
+  <button onclick="suggestLogos()">Suggest Logos</button>
+
+  <div id="logoOptionsGrid" class="logo-options-grid"></div>
+</div>
 
     <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
     <br />
@@ -280,7 +328,80 @@
       logoUrl: "",
       heroImageUrl: ""
     };
+const logoLibrary = [
+  {
+    name: "Luxury Auto",
+    keywords: ["auto", "car", "detailing", "luxury", "porsche", "vehicle"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg"
+  },
+  {
+    name: "Modern Tech",
+    keywords: ["tech", "software", "ai", "startup", "digital"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png"
+  },
+  {
+    name: "Clean Business",
+    keywords: ["business", "professional", "service", "company"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_placeholder.svg"
+  },
+  {
+    name: "Medical Style",
+    keywords: ["medical", "clinic", "health", "doctor"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/5/57/Caduceus.svg"
+  },
+  {
+    name: "Restaurant Badge",
+    keywords: ["food", "restaurant", "dining", "cafe"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Simpleicons_Business_plate.svg"
+  },
+  {
+    name: "Fitness Brand",
+    keywords: ["gym", "fitness", "workout", "training"],
+    url: "https://upload.wikimedia.org/wikipedia/commons/8/82/Dumbbell_icon.svg"
+  }
+];
 
+function suggestLogos() {
+  const prompt = document.getElementById("logoPromptInput").value.toLowerCase();
+  const grid = document.getElementById("logoOptionsGrid");
+
+  if (!grid) return;
+
+  let matches = logoLibrary.filter(logo =>
+    logo.keywords.some(keyword => prompt.includes(keyword))
+  );
+
+  if (matches.length === 0) {
+    matches = logoLibrary.slice(0, 4);
+  }
+
+  grid.innerHTML = matches
+    .map(
+      logo => `
+        <div class="logo-option">
+          <img src="${logo.url}" alt="${logo.name}" />
+          <p>${logo.name}</p>
+          <button onclick="applySuggestedLogo('${logo.url}')">Apply Logo</button>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function applySuggestedLogo(url) {
+  saveVersionBeforeChange();
+
+  siteData.logoUrl = url;
+
+  const logoInput = document.getElementById("logoUrlInput");
+  if (logoInput) logoInput.value = url;
+
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent = "Logo applied.";
+}
     let currentEditSection = "all";
     const SITE_DATA_KEY = "siteData";
     const SITE_HISTORY_KEY = "siteHistory";
