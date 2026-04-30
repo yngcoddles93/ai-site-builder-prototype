@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+const { put } = require("@vercel/blob");
+
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -7,9 +9,7 @@ export default async function handler(req, res) {
     const { prompt, siteData } = req.body;
 
     if (!prompt) {
-      return res.status(400).json({
-        error: "Logo prompt is required"
-      });
+      return res.status(400).json({ error: "Logo prompt is required" });
     }
 
     const businessName = siteData?.heroTitle || "Business Logo";
@@ -32,57 +32,40 @@ plain background
 website-ready
 `;
 
-    // Generate image from OpenAI
-    const imageResponse = await fetch(
-      "https://api.openai.com/v1/images/generations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-image-1",
-          prompt: logoPrompt,
-          size: "1024x1024"
-        })
-      }
-    );
+    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: logoPrompt,
+        size: "1024x1024",
+        n: 1
+      })
+    });
 
     const imageResult = await imageResponse.json();
 
     if (!imageResponse.ok) {
-      console.error(imageResult);
       return res.status(500).json({
-        error: "Logo generation failed"
+        error: imageResult.error?.message || "OpenAI logo generation failed"
       });
     }
 
-    const base64Image = imageResult.data[0].b64_json;
+    const base64Image = imageResult.data?.[0]?.b64_json;
+
+    if (!base64Image) {
+      return res.status(500).json({ error: "No image returned from OpenAI" });
+    }
 
     const imageBuffer = Buffer.from(base64Image, "base64");
 
-    // Upload to Vercel Blob
-    const uploadResponse = await fetch(
-  "https://blob.vercel-storage.com/upload",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-      "Content-Type": "image/png",
-      "x-vercel-filename": `logo-${Date.now()}.png`
-    },
-    body: imageBuffer
-  }
-);
-
-const blob = await uploadResponse.json();
-
-if (!blob.url) {
-  throw new Error("Blob upload failed");
-}
-
-    const blob = await uploadResponse.json();
+    const blob = await put(`logos/logo-${Date.now()}.png`, imageBuffer, {
+      access: "public",
+      contentType: "image/png"
+    });
 
     return res.status(200).json({
       logos: [
@@ -92,12 +75,11 @@ if (!blob.url) {
         }
       ]
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Generate logo error:", error);
 
     return res.status(500).json({
-      error: "Server error generating logo"
+      error: error.message || "Server error generating logo"
     });
   }
-}
+};
