@@ -329,66 +329,67 @@
       logoUrl: "",
       heroImageUrl: ""
     };
-const logoLibrary = [
-  {
-    name: "Luxury Auto",
-    keywords: ["auto", "car", "detailing", "luxury", "porsche", "vehicle"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg"
-  },
-  {
-    name: "Modern Tech",
-    keywords: ["tech", "software", "ai", "startup", "digital"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png"
-  },
-  {
-    name: "Clean Business",
-    keywords: ["business", "professional", "service", "company"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_placeholder.svg"
-  },
-  {
-    name: "Medical Style",
-    keywords: ["medical", "clinic", "health", "doctor"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/5/57/Caduceus.svg"
-  },
-  {
-    name: "Restaurant Badge",
-    keywords: ["food", "restaurant", "dining", "cafe"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Simpleicons_Business_plate.svg"
-  },
-  {
-    name: "Fitness Brand",
-    keywords: ["gym", "fitness", "workout", "training"],
-    url: "https://upload.wikimedia.org/wikipedia/commons/8/82/Dumbbell_icon.svg"
-  }
-];
 
-function suggestLogos() {
-  const prompt = document.getElementById("logoPromptInput").value.toLowerCase();
+
+async function suggestLogos() {
+  const prompt = document.getElementById("logoPromptInput").value.trim();
   const grid = document.getElementById("logoOptionsGrid");
+  const statusText = document.getElementById("statusText");
+
+ if (!prompt) {
+  statusText.textContent = "Describe the logo style you want first.";
+  return;
+}
 
   if (!grid) return;
 
-  let matches = logoLibrary.filter(logo =>
-    logo.keywords.some(keyword => prompt.includes(keyword))
-  );
+  statusText.textContent = "Generating logo options...";
+  grid.innerHTML = "<p>Generating logos...</p>";
 
-  if (matches.length === 0) {
-    matches = logoLibrary.slice(0, 4);
-  }
+  try {
+    const response = await fetch("/api/generate-logo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prompt,
+        siteData
+      })
+    });
 
-  grid.innerHTML = matches
-    .map(
-      logo => `
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Logo generation failed.");
+    }
+
+    const logos = data.logos || [];
+
+    if (logos.length === 0) {
+      throw new Error("No logos were returned.");
+    }
+
+    grid.innerHTML = logos
+      .map(
+        logo => `
         <div class="logo-option">
-          <img src="${logo.url}" alt="${logo.name}" />
-          <p>${logo.name}</p>
-          <button onclick="applySuggestedLogo('${logo.url}')">Apply Logo</button>
+          <img src="${logo.url}" />
+          <button onclick="applySuggestedLogo('${logo.url}')">
+            Apply Logo
+          </button>
         </div>
       `
-    )
-    .join("");
-}
+      )
+      .join("");
 
+    statusText.textContent = "Logo options generated.";
+  } catch (error) {
+    console.error(error);
+    statusText.textContent = "Logo generation failed.";
+    grid.innerHTML = "";
+  }
+}
 function applySuggestedLogo(url) {
   saveVersionBeforeChange();
 
