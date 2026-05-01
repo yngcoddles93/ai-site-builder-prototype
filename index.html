@@ -244,9 +244,10 @@
       <button id="btn-all" onclick="setEditSection('all')">Edit Entire Site</button>
     </div>
 
-    <div style="margin-bottom:10px;">
-      <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
-    </div>
+  <div style="margin-bottom:10px;">
+  <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
+  <button id="launchBtn" onclick="launchWebsite()" style="display:none;">Launch Website</button>
+</div>
 
     <div class="image-controls">
       <label for="logoUrlInput">Logo Image URL</label>
@@ -587,6 +588,7 @@ function applySuggestedLogo(index) {
       }
 
       document.getElementById("exportBtn").style.display = "inline-block";
+document.getElementById("launchBtn").style.display = "inline-block";
     }
 
     function makeCards(items, targetId) {
@@ -790,20 +792,7 @@ function applySuggestedLogo(index) {
       document.body.removeChild(a);
 
       window.URL.revokeObjectURL(url);
-    }
-
-    function exportWebsite() {
-      const heroTitle = siteData.heroTitle || "Business Website";
-      const heroSubtitle = siteData.heroSubtitle || "";
-      const logoUrl = siteData.logoUrl || "";
-      const heroImageUrl = siteData.heroImageUrl || "";
-
-      const services = (siteData.services || []).map(item => `
-        <div class="card">
-          <h4>${item.title || ""}</h4>
-          <p>${item.description || ""}</p>
-        </div>
-      `).join("");
+     }
 
       const features = (siteData.features || []).map(item => `
         <div class="card">
