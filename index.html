@@ -780,21 +780,48 @@ document.getElementById("launchBtn").style.display = "inline-block";
     loadSavedSite();
     renderHistoryList();
 
-    function downloadFile(filename, content, type = "text/plain") {
-      const blob = new Blob([content], { type });
-      const url = window.URL.createObjectURL(blob);
+function downloadFile(filename, content, type = "text/plain") {
+  const blob = new Blob([content], { type });
+  const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 
-      window.URL.revokeObjectURL(url);
-     }
+  window.URL.revokeObjectURL(url);
+}
 
-      const features = (siteData.features || []).map(item => `
+
+function launchWebsite() {
+  if (!siteData) {
+    alert("Generate a website first.");
+    return;
+  }
+
+  const siteId = "site-" + Date.now();
+
+  localStorage.setItem(siteId, JSON.stringify(siteData));
+
+  window.open("site.html?id=" + siteId, "_blank");
+}
+
+function exportWebsite() {
+  const heroTitle = siteData.heroTitle || "Business Website";
+  const heroSubtitle = siteData.heroSubtitle || "";
+  const logoUrl = siteData.logoUrl || "";
+  const heroImageUrl = siteData.heroImageUrl || "";
+
+  const services = (siteData.services || []).map(item => `
+    <div class="card">
+      <h4>${item.title || ""}</h4>
+      <p>${item.description || ""}</p>
+    </div>
+  `).join("");
+
+  const features = (siteData.features || []).map(item => `
         <div class="card">
           <h4>${item.title || ""}</h4>
           <p>${item.description || ""}</p>
