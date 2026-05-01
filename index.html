@@ -595,6 +595,22 @@ function applySuggestedLogo(index) {
     function renderSite(data) {
       const previewBusinessName = document.getElementById("previewBusinessName");
 const previewLogo = document.getElementById("previewLogo");
+const siteLogo = document.getElementById("siteLogo");
+
+if (data.logoUrl) {
+  if (previewLogo) {
+    previewLogo.src = data.logoUrl;
+    previewLogo.style.display = "block";
+  }
+
+  if (siteLogo) {
+    siteLogo.src = data.logoUrl;
+    siteLogo.style.display = "block";
+  }
+} else {
+  if (previewLogo) previewLogo.style.display = "none";
+  if (siteLogo) siteLogo.style.display = "none";
+}
 
 if (previewBusinessName) {
   previewBusinessName.textContent = data.heroTitle || "Business Website";
