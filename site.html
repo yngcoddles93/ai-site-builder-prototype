@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launched Website</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      color: #111827;
+    }
+
+    header {
+      padding: 28px 8%;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-wrap img {
+      max-height: 54px;
+      max-width: 160px;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .hero {
+      padding: 90px 8%;
+      text-align: center;
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    }
+
+    .hero img {
+      max-width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 22px;
+      margin-top: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      margin: 0 0 18px;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      font-size: 22px;
+      max-width: 760px;
+      margin: 0 auto;
+      color: #4b5563;
+    }
+
+    section {
+      padding: 70px 8%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h2 {
+      font-size: 34px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: white;
+      padding: 26px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .text-block {
+      background: white;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      font-size: 19px;
+      line-height: 1.7;
+      color: #374151;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px;
+      background: #111827;
+      color: white;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo-wrap">
+      <img id="siteLogo" style="display:none;" />
+      <div class="brand-name" id="brandName">Website</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 id="heroTitle">Website Title</h1>
+      <p id="heroSubtitle">Website subtitle will appear here.</p>
+      <img id="heroImage" style="display:none;" />
+    </section>
+
+    <section>
+      <h2>Services</h2>
+      <div class="cards" id="servicesGrid"></div>
+    </section>
+
+    <section>
+      <h2>Why Choose Us</h2>
+      <div class="cards" id="featuresGrid"></div>
+    </section>
+
+    <section>
+      <h2>About</h2>
+      <div class="text-block" id="aboutText"></div>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <div class="text-block" id="contactText"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p id="footerText">Built with AI Website Builder</p>
+  </footer>
+
+  <script>
+    function getSiteId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    function createCards(items, containerId) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+
+      if (!Array.isArray(items)) return;
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        if (typeof item === "string") {
+          card.textContent = item;
+        } else {
+          card.innerHTML = `
+            <strong>${item.title || ""}</strong>
+            <p>${item.description || ""}</p>
+          `;
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderLaunchedSite(data) {
+      document.getElementById("heroTitle").textContent =
+        data.heroTitle || "Website Title";
+
+      document.getElementById("heroSubtitle").textContent =
+        data.heroSubtitle || "";
+
+      document.getElementById("brandName").textContent =
+        data.heroTitle || "Website";
+
+      document.getElementById("aboutText").textContent =
+        data.about || "";
+
+      document.getElementById("contactText").textContent =
+        data.contact || data.contactText || "";
+
+      createCards(data.services || [], "servicesGrid");
+      createCards(data.features || [], "featuresGrid");
+
+      if (data.logoUrl) {
+        const logo = document.getElementById("siteLogo");
+        logo.src = data.logoUrl;
+        logo.style.display = "block";
+      }
+
+      if (data.heroImageUrl) {
+        const heroImage = document.getElementById("heroImage");
+        heroImage.src = data.heroImageUrl;
+        heroImage.style.display = "block";
+      }
+
+      document.title = data.heroTitle || "Launched Website";
+      document.getElementById("footerText").textContent =
+        data.heroTitle || "Built with AI Website Builder";
+    }
+
+    function loadLaunchedSite() {
+      const siteId = getSiteId();
+
+      if (!siteId) {
+        document.body.innerHTML = "<h1 style='padding:40px;'>No site ID found.</h1>";
+        return;
+      }
+
+      const savedSite = localStorage.getItem(siteId);
+
+      if (!savedSite) {
+        document.body.innerHTML = "<h1 style='padding:40px;'>Site not found.</h1>";
+        return;
+      }
+
+      const data = JSON.parse(savedSite);
+      renderLaunchedSite(data);
+    }
+
+    loadLaunchedSite();
+  </script>
+
+</body>
+</html>
