@@ -593,6 +593,21 @@ function applySuggestedLogo(index) {
     }
 
     function renderSite(data) {
+      const previewBusinessName = document.getElementById("previewBusinessName");
+const previewLogo = document.getElementById("previewLogo");
+
+if (previewBusinessName) {
+  previewBusinessName.textContent = data.heroTitle || "Business Website";
+}
+
+if (previewLogo) {
+  if (data.logoUrl) {
+    previewLogo.src = data.logoUrl;
+    previewLogo.style.display = "block";
+  } else {
+    previewLogo.style.display = "none";
+  }
+}
       document.getElementById("heroTitle").textContent =
         data.heroTitle || "Business Website";
 
