@@ -380,17 +380,25 @@
   </div>
 
   <script>
-    let siteData = {
-      heroTitle: "Business Website",
-      heroSubtitle: "A strong modern website built from your prompt.",
-      services: [],
-      features: [],
-      about: "",
-      contact: "",
-      logoUrl: "",
-      heroImageUrl: ""
-    };
+   <script>
+let siteData = {
+  heroTitle: "Business Website",
+  heroSubtitle: "A strong modern website built from your prompt.",
+  services: [],
+  features: [],
+  about: "",
+  contact: "",
+  logoUrl: "",
+  heroImageUrl: "",
 
+  pages: [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ]
+};
 
 let generatedLogoOptions = [];
 
@@ -576,16 +584,24 @@ function applySuggestedLogo(index) {
 
       const restored = history[index].data || {};
 
-      siteData = {
-        heroTitle: restored.heroTitle || "Business Website",
-        heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
-        services: restored.services || [],
-        features: restored.features || [],
-        about: restored.about || "",
-        contact: restored.contact || restored.contactText || "",
-        logoUrl: restored.logoUrl || "",
-        heroImageUrl: restored.heroImageUrl || ""
-      };
+    siteData = {
+  heroTitle: restored.heroTitle || "Business Website",
+  heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
+  services: restored.services || [],
+  features: restored.features || [],
+  about: restored.about || "",
+  contact: restored.contact || "",
+  logoUrl: restored.logoUrl || "",
+  heroImageUrl: restored.heroImageUrl || "",
+
+  pages: restored.pages || [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ]
+};
 
       saveCurrentSite();
       renderSite(siteData);
