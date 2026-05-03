@@ -375,17 +375,17 @@
   </div>
 
   <script>
-siteData = {
-  heroTitle: data.heroTitle || "Business Website",
-  heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
-  services: data.services || [],
-  features: data.features || [],
-  about: data.about || "",
-  contact: data.contact || "",
-  logoUrl: data.logoUrl || "",
-  heroImageUrl: data.heroImageUrl || "",
+let siteData = {
+  heroTitle: "Business Website",
+  heroSubtitle: "A strong modern website built from your prompt.",
+  services: [],
+  features: [],
+  about: "",
+  contact: "",
+  logoUrl: "",
+  heroImageUrl: "",
 
-  pages: siteData.pages || [
+  pages: [
     {
       slug: "home",
       title: "Home",
@@ -513,7 +513,15 @@ function applySuggestedLogo(index) {
           about: parsed.about || "",
           contact: parsed.contact || parsed.contactText || "",
           logoUrl: parsed.logoUrl || "",
-          heroImageUrl: parsed.heroImageUrl || ""
+      heroImageUrl: parsed.heroImageUrl || "",
+
+pages: parsed.pages || [
+  {
+    slug: "home",
+    title: "Home",
+    fileName: "index.html"
+  }
+]
         };
 
         renderSite(siteData);
@@ -781,7 +789,15 @@ document.getElementById("launchBtn").style.display = "inline-block";
           about: data.about || "",
           contact: data.contact || "",
           logoUrl: data.logoUrl || "",
-          heroImageUrl: data.heroImageUrl || ""
+          heroImageUrl: data.heroImageUrl || "",
+
+pages: siteData.pages || [
+  {
+    slug: "home",
+    title: "Home",
+    fileName: "index.html"
+  }
+]
         };
 
         renderSite(siteData);
