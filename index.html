@@ -330,12 +330,7 @@
     <span id="previewBusinessName">Business Website</span>
   </div>
 
-  <div class="nav-links">
-    <a href="#home">Home</a>
-    <a href="#services">Services</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
-  </div>
+<div class="nav-links" id="previewNavLinks"></div>
 </nav>
       <div class="site-header">
         <img id="siteLogo" class="site-logo" src="" alt="Logo" style="display:none;" />
@@ -606,8 +601,44 @@ function applySuggestedLogo(index) {
       renderSite(siteData);
       renderHistoryList();
     }
+function renderPreviewNavbar(data) {
+  const navLinks = document.getElementById("previewNavLinks");
 
-    function renderSite(data) {
+  if (!navLinks) return;
+
+  const pages = data.pages || [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ];
+
+  navLinks.innerHTML = pages
+    .map(page => {
+      if (page.slug === "home") {
+        return `<a href="#home">${page.title}</a>`;
+      }
+
+      return `<a href="${page.fileName}">${page.title}</a>`;
+    })
+    .join("");
+
+  if (!pages.some(page => page.slug === "services")) {
+    navLinks.innerHTML += `<a href="#services">Services</a>`;
+  }
+
+  if (!pages.some(page => page.slug === "about")) {
+    navLinks.innerHTML += `<a href="#about">About</a>`;
+  }
+
+  if (!pages.some(page => page.slug === "contact")) {
+    navLinks.innerHTML += `<a href="#contact">Contact</a>`;
+  }
+}
+
+function renderSite(data) {
+  renderPreviewNavbar(data);
       const previewBusinessName = document.getElementById("previewBusinessName");
 const previewLogo = document.getElementById("previewLogo");
 const siteLogo = document.getElementById("siteLogo");
