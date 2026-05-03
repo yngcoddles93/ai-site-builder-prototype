@@ -380,17 +380,17 @@
   </div>
 
   <script>
-let siteData = {
-  heroTitle: "Business Website",
-  heroSubtitle: "A strong modern website built from your prompt.",
-  services: [],
-  features: [],
-  about: "",
-  contact: "",
-  logoUrl: "",
-  heroImageUrl: "",
+siteData = {
+  heroTitle: data.heroTitle || "Business Website",
+  heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
+  services: data.services || [],
+  features: data.features || [],
+  about: data.about || "",
+  contact: data.contact || "",
+  logoUrl: data.logoUrl || "",
+  heroImageUrl: data.heroImageUrl || "",
 
-  pages: [
+  pages: siteData.pages || [
     {
       slug: "home",
       title: "Home",
