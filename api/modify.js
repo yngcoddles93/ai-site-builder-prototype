@@ -30,13 +30,19 @@ export default async function handler(req, res) {
       ]
     };
 
-    const allowedKeys = sectionFieldMap[section];
+    let allowedKeys = sectionFieldMap[section];
 
-    if (!allowedKeys) {
-      return res.status(400).json({
-        error: "Invalid section selected"
-      });
-    }
+const isCustomPage = siteData.pages?.some(page => page.slug === section);
+
+if (!allowedKeys && isCustomPage) {
+  allowedKeys = ["content"];
+}
+
+if (!allowedKeys) {
+  return res.status(400).json({
+    error: "Invalid section selected"
+  });
+}
 
     const aiPrompt = `
 You are editing an existing website.
