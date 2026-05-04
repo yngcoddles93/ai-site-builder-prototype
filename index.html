@@ -318,10 +318,12 @@
 
       <div id="logoOptionsGrid" class="logo-options-grid"></div>
     </div>
-
+<p id="editingLabel" style="color:#cbd5e1; font-weight:bold; margin-bottom:8px;">
+  Editing: Home
+</p>
     <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
     <br />
-    <button onclick="modifySite()">Modify Website</button>
+   <button onclick="modifySite()">Modify Current Page</button>
     <div class="status" id="statusText"></div>
 
     <div class="preview" id="previewBox" style="display:none;">
@@ -712,9 +714,21 @@ function renderPagesContent(data) {
     </div>
   `;
 }
-    function switchPage(slug) {
+   function switchPage(slug) {
   currentPage = slug;
   renderSite(siteData);
+
+  const label = document.getElementById("editingLabel");
+  const page = siteData.pages.find(p => p.slug === slug);
+
+  if (label) {
+    if (page) {
+      label.textContent = "Editing: " + page.title;
+    } else {
+      label.textContent =
+        "Editing: " + slug.charAt(0).toUpperCase() + slug.slice(1);
+    }
+  }
 }
 function renderSite(data) {
   renderPreviewNavbar(data);
