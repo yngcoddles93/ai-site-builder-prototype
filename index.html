@@ -365,7 +365,10 @@
   <h3>Contact</h3>
   <p id="contactText">Your contact information will appear here.</p>
 </div>
-
+<div class="section" id="pagesSection">
+  <h3>Pages</h3>
+  <div class="cards" id="pagesContent"></div>
+</div>
     </div>
   </div>
 
@@ -610,7 +613,7 @@ pages: parsed.pages || [
       renderSite(siteData);
       renderHistoryList();
     }
-    function addPage() {
+   function addPage() {
   saveVersionBeforeChange();
 
   if (!siteData.pages) {
@@ -618,14 +621,15 @@ pages: parsed.pages || [
       {
         slug: "home",
         title: "Home",
-        fileName: "index.html"
+        fileName: "index.html",
+        content: "Welcome to the home page."
       }
     ];
   }
 
   const pageTitle = prompt("What should this page be called?");
 
-  if (!pageTitle) return;
+  if (!pageTitle || !pageTitle.trim()) return;
 
   const slug = pageTitle
     .toLowerCase()
@@ -633,10 +637,17 @@ pages: parsed.pages || [
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+  const exists = siteData.pages.some(p => p.slug === slug);
+  if (exists) {
+    alert("Page already exists.");
+    return;
+  }
+
   siteData.pages.push({
     slug: slug,
     title: pageTitle,
-    fileName: slug + ".html"
+    fileName: slug + ".html",
+    content: "This is the " + pageTitle + " page. Add your content here."
   });
 
   saveCurrentSite();
@@ -681,9 +692,31 @@ function renderPreviewNavbar(data) {
     navLinks.innerHTML += `<a href="#contact">Contact</a>`;
   }
 }
+function renderPagesContent(data) {
+  const pagesContent = document.getElementById("pagesContent");
 
+  if (!pagesContent) return;
+
+  const pages = data.pages || [];
+  const extraPages = pages.filter(page => page.slug !== "home");
+
+  if (extraPages.length === 0) {
+    pagesContent.innerHTML = "<p>No extra pages yet. Click Add Page to create one.</p>";
+    return;
+  }
+
+  pagesContent.innerHTML = extraPages
+    .map(page => `
+      <div class="card" id="${page.slug}">
+        <h4>${page.title}</h4>
+        <p>${page.content || "Add content for this page."}</p>
+      </div>
+    `)
+    .join("");
+}
 function renderSite(data) {
   renderPreviewNavbar(data);
+  renderPagesContent(data);
       const previewBusinessName = document.getElementById("previewBusinessName");
 const previewLogo = document.getElementById("previewLogo");
 const siteLogo = document.getElementById("siteLogo");
