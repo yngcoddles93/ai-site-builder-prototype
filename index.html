@@ -430,10 +430,9 @@ async function suggestLogos() {
       headers: {
         "Content-Type": "application/json"
       },
-     body: JSON.stringify({
+    body: JSON.stringify({
   prompt,
-  siteData,
-  section: currentPage === "home" ? currentEditSection : currentPage
+  siteData
 })
     });
 
@@ -918,7 +917,7 @@ pages: siteData.pages || [
           body: JSON.stringify({
             prompt: editPrompt,
             siteData: siteData,
-            section: currentEditSection
+           section: currentPage === "home" ? currentEditSection : currentPage
           })
         });
 
