@@ -760,6 +760,12 @@ if (previewLogo) {
       makeCards(data.features || [], "featuresGrid");
 
       const aboutText = document.getElementById("aboutText");
+  const isHome = currentPage === "home";
+
+document.querySelector(".hero").style.display = isHome ? "flex" : "none";
+document.getElementById("services").style.display = isHome ? "block" : "none";
+document.getElementById("about").style.display = isHome ? "block" : "none";
+document.getElementById("contact").style.display = isHome ? "block" : "none";
       const contactText = document.getElementById("contactText");
       const previewBox = document.getElementById("previewBox");
 
