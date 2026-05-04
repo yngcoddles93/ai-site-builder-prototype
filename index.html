@@ -430,10 +430,11 @@ async function suggestLogos() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        prompt,
-        siteData
-      })
+     body: JSON.stringify({
+  prompt,
+  siteData,
+  section: currentPage === "home" ? currentEditSection : currentPage
+})
     });
 
     console.log("Response received:", response);
@@ -934,10 +935,19 @@ pages: siteData.pages || [
           throw new Error(data.error || "Update failed.");
         }
 
-        siteData = {
-          ...siteData,
-          ...data
-        };
+       if (currentPage === "home") {
+  siteData = {
+    ...siteData,
+    ...data
+  };
+} else {
+  const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
+
+  if (pageIndex !== -1) {
+    siteData.pages[pageIndex].content =
+      data.content || siteData.pages[pageIndex].content;
+  }
+}
 
         renderSite(siteData);
         saveCurrentSite();
