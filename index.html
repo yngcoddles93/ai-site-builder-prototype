@@ -1033,13 +1033,71 @@ function launchWebsite() {
     return;
   }
 
-  const siteId = "site-" + Date.now();
+  const newWindow = window.open("", "_blank");
 
-  localStorage.setItem(siteId, JSON.stringify(siteData));
+  newWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${siteData.heroTitle}</title>
+      <style>
+        body { font-family: Arial; margin:0; background:#0f172a; color:white; }
+        .section { padding: 40px; }
+        .card { background:#1e293b; padding:20px; border-radius:12px; margin:10px 0; }
+        .nav { display:flex; gap:20px; padding:20px; background:white; color:black; }
+        .nav a { cursor:pointer; font-weight:bold; }
+      </style>
+    </head>
+    <body>
 
- const newWindow = window.open("", "_blank");
-newWindow.document.write(document.documentElement.outerHTML);
-newWindow.document.close();
+      <div class="nav" id="nav"></div>
+      <div id="content"></div>
+
+      <script>
+        let siteData = ${JSON.stringify(siteData)};
+        let currentPage = "home";
+
+        function render() {
+          const nav = document.getElementById("nav");
+          const content = document.getElementById("content");
+
+          nav.innerHTML = siteData.pages.map(p =>
+            '<a onclick="switchPage(\\'' + p.slug + '\\')">' + p.title + '</a>'
+          ).join("");
+
+          if (currentPage === "home") {
+            content.innerHTML = \`
+              <div class="section">
+                <h1>\${siteData.heroTitle}</h1>
+                <p>\${siteData.heroSubtitle}</p>
+              </div>
+            \`;
+          } else {
+            const page = siteData.pages.find(p => p.slug === currentPage);
+            content.innerHTML = \`
+              <div class="section">
+                <div class="card">
+                  <h2>\${page.title}</h2>
+                  <p>\${page.content || ""}</p>
+                </div>
+              </div>
+            \`;
+          }
+        }
+
+        function switchPage(slug) {
+          currentPage = slug;
+          render();
+        }
+
+        render();
+      <\/script>
+
+    </body>
+    </html>
+  `);
+
+  newWindow.document.close();
 }
 
 function exportWebsite() {
