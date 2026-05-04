@@ -1037,7 +1037,9 @@ function launchWebsite() {
 
   localStorage.setItem(siteId, JSON.stringify(siteData));
 
-  window.open("site.html?id=" + siteId, "_blank");
+ const newWindow = window.open("", "_blank");
+newWindow.document.write(document.documentElement.outerHTML);
+newWindow.document.close();
 }
 
 function exportWebsite() {
