@@ -397,7 +397,7 @@ let siteData = {
     }
   ]
 };
-
+let currentPage = "home";
 let generatedLogoOptions = [];
 
 async function suggestLogos() {
@@ -673,10 +673,10 @@ function renderPreviewNavbar(data) {
   navLinks.innerHTML = pages
     .map(page => {
       if (page.slug === "home") {
-        return `<a href="#home">${page.title}</a>`;
+       return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
       }
 
-      return `<a href="${page.fileName}">${page.title}</a>`;
+      return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
     })
     .join("");
 
@@ -698,21 +698,23 @@ function renderPagesContent(data) {
   if (!pagesContent) return;
 
   const pages = data.pages || [];
-  const extraPages = pages.filter(page => page.slug !== "home");
+  const current = pages.find(p => p.slug === currentPage);
 
-  if (extraPages.length === 0) {
-    pagesContent.innerHTML = "<p>No extra pages yet. Click Add Page to create one.</p>";
+  if (!current || currentPage === "home") {
+    pagesContent.innerHTML = "";
     return;
   }
 
-  pagesContent.innerHTML = extraPages
-    .map(page => `
-      <div class="card" id="${page.slug}">
-        <h4>${page.title}</h4>
-        <p>${page.content || "Add content for this page."}</p>
-      </div>
-    `)
-    .join("");
+  pagesContent.innerHTML = `
+    <div class="card">
+      <h4>${current.title}</h4>
+      <p>${current.content || "Add content for this page."}</p>
+    </div>
+  `;
+}
+    function switchPage(slug) {
+  currentPage = slug;
+  renderSite(siteData);
 }
 function renderSite(data) {
   renderPreviewNavbar(data);
