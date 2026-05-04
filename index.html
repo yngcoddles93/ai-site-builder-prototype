@@ -291,8 +291,9 @@
     </div>
 
   <div style="margin-bottom:10px;">
-  <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
-  <button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
+ <button onclick="addPage()">Add Page</button>
+<button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
+<button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
 </div>
 
     <div class="image-controls">
@@ -609,6 +610,42 @@ pages: parsed.pages || [
       renderSite(siteData);
       renderHistoryList();
     }
+    function addPage() {
+  saveVersionBeforeChange();
+
+  if (!siteData.pages) {
+    siteData.pages = [
+      {
+        slug: "home",
+        title: "Home",
+        fileName: "index.html"
+      }
+    ];
+  }
+
+  const pageTitle = prompt("What should this page be called?");
+
+  if (!pageTitle) return;
+
+  const slug = pageTitle
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  siteData.pages.push({
+    slug: slug,
+    title: pageTitle,
+    fileName: slug + ".html"
+  });
+
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent =
+    pageTitle + " page added.";
+}
 function renderPreviewNavbar(data) {
   const navLinks = document.getElementById("previewNavLinks");
 
