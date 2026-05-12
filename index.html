@@ -708,7 +708,6 @@ function renderPagesContent(data) {
   }
 
   const componentsHtml = (current.components || []).map(c => {
-
     if (c.type === "text") {
       return `<p>${c.value}</p>`;
     }
@@ -719,9 +718,7 @@ function renderPagesContent(data) {
           ${(c.tiers || []).map(t => `
             <div class="card">
               <h4>${t.name}</h4>
-              <p style="font-size:28px;font-weight:bold;">
-                $${t.price}
-              </p>
+              <p style="font-size:28px;font-weight:bold;">$${t.price}</p>
               <p>${t.description || ""}</p>
             </div>
           `).join("")}
@@ -729,8 +726,25 @@ function renderPagesContent(data) {
       `;
     }
 
-    return "";
+    if (c.type === "button") {
+      return `
+        <a href="${c.link || "#"}"
+           style="
+             display:inline-block;
+             background:#3b82f6;
+             color:white;
+             padding:14px 24px;
+             border-radius:10px;
+             text-decoration:none;
+             font-weight:bold;
+             margin-top:16px;
+           ">
+          ${c.text || "Click Here"}
+        </a>
+      `;
+    }
 
+    return "";
   }).join("");
 
   pagesContent.innerHTML = `
@@ -740,7 +754,6 @@ function renderPagesContent(data) {
     </div>
   `;
 }
-   function switchPage(slug) {
   currentPage = slug;
   renderSite(siteData);
 
@@ -1169,10 +1182,24 @@ function launchWebsite() {
     '</div>';
   }
 
+  if (c.type === "button") {
+    return '<a href="' + (c.link || '#') + '" style="' +
+      'display:inline-block;' +
+      'background:#3b82f6;' +
+      'color:white;' +
+      'padding:14px 24px;' +
+      'border-radius:10px;' +
+      'text-decoration:none;' +
+      'font-weight:bold;' +
+      'margin-top:16px;' +
+    '">' +
+      (c.text || 'Click Here') +
+    '</a>';
+  }
+
   return '';
 
 }).join('');
-
 content.innerHTML =
   '<div class="section">' +
     '<div class="card">' +
