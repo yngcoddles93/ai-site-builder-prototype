@@ -59,7 +59,51 @@ Only modify fields in this section:
 ${allowedKeys.join(", ")}
 
 Do not modify anything outside these fields.
+Do not modify anything outside these fields.
 
+If editing a custom page, return structured components instead of plain text.
+
+Supported custom page response format:
+
+{
+  "content": [
+    {
+      "type": "text",
+      "value": "Paragraph text here"
+    }
+  ]
+}
+
+For pricing sections, use:
+
+{
+  "content": [
+    {
+      "type": "pricing",
+      "tiers": [
+        {
+          "name": "Basic",
+          "price": 500,
+          "description": "Short description"
+        },
+        {
+          "name": "Premium",
+          "price": 900,
+          "description": "Short description"
+        },
+        {
+          "name": "Elite",
+          "price": 1500,
+          "description": "Short description"
+        }
+      ]
+    }
+  ]
+}
+
+Allowed image fields:
+- logoUrl
+- heroImageUrl
 Allowed image fields:
 - logoUrl
 - heroImageUrl
