@@ -999,7 +999,10 @@ pages: siteData.pages || [
 
 if (pageIndex !== -1) {
   if (Array.isArray(data.content)) {
-    siteData.pages[pageIndex].components = data.content;
+   siteData.pages[pageIndex].components = [
+  ...(siteData.pages[pageIndex].components || []),
+  ...data.content
+];
   }
 }
 }
