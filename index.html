@@ -1151,11 +1151,35 @@ function launchWebsite() {
           return p.slug === currentPage;
         });
 
-        content.innerHTML =
-          '<div class="section"><div class="card">' +
-          '<h2>' + page.title + '</h2>' +
-          '<p>' + (page.content || "") + '</p>' +
-          '</div></div>';
+       var componentsHtml = (page.components || []).map(function(c) {
+
+  if (c.type === "text") {
+    return '<p>' + c.value + '</p>';
+  }
+
+  if (c.type === "pricing") {
+    return '<div class="cards">' +
+      (c.tiers || []).map(function(t) {
+        return '<div class="card">' +
+          '<h3>' + t.name + '</h3>' +
+          '<p style="font-size:32px;font-weight:bold;">$' + t.price + '</p>' +
+          '<p>' + (t.description || "") + '</p>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  return '';
+
+}).join('');
+
+content.innerHTML =
+  '<div class="section">' +
+    '<div class="card">' +
+      '<h2>' + page.title + '</h2>' +
+      componentsHtml +
+    '</div>' +
+  '</div>';
       }
     }
 
