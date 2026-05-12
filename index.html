@@ -982,13 +982,14 @@ pages: siteData.pages || [
 } else {
   const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
 
-  if (pageIndex !== -1) {
-   if (Array.isArray(data.content)) {
-  siteData.pages[pageIndex].components = data.content;
+if (pageIndex !== -1) {
+  if (Array.isArray(data.content)) {
+    siteData.pages[pageIndex].components = data.content;
+  }
 }
 }
 
-        renderSite(siteData);
+renderSite(siteData);
         saveCurrentSite();
         renderHistoryList();
 
