@@ -983,9 +983,9 @@ pages: siteData.pages || [
   const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
 
   if (pageIndex !== -1) {
-    siteData.pages[pageIndex].content =
-      data.content || siteData.pages[pageIndex].content;
-  }
+   if (Array.isArray(data.content)) {
+  siteData.pages[pageIndex].components = data.content;
+}
 }
 
         renderSite(siteData);
