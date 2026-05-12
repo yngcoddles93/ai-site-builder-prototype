@@ -32,17 +32,19 @@ export default async function handler(req, res) {
 
     let allowedKeys = sectionFieldMap[section];
 
-const isCustomPage = siteData.pages?.some(page => page.slug === section);
+    const isCustomPage = siteData.pages?.some(
+      page => page.slug === section
+    );
 
-if (!allowedKeys && isCustomPage) {
-  allowedKeys = ["content"];
-}
+    if (!allowedKeys && isCustomPage) {
+      allowedKeys = ["content"];
+    }
 
-if (!allowedKeys) {
-  return res.status(400).json({
-    error: "Invalid section selected"
-  });
-}
+    if (!allowedKeys) {
+      return res.status(400).json({
+        error: "Invalid section selected"
+      });
+    }
 
     const aiPrompt = `
 You are editing an existing website.
@@ -58,7 +60,6 @@ ${section}
 Only modify fields in this section:
 ${allowedKeys.join(", ")}
 
-Do not modify anything outside these fields.
 Do not modify anything outside these fields.
 
 If editing a custom page, return structured components instead of plain text.
@@ -101,9 +102,6 @@ For pricing sections, use:
   ]
 }
 
-Allowed image fields:
-- logoUrl
-- heroImageUrl
 Allowed image fields:
 - logoUrl
 - heroImageUrl
@@ -182,6 +180,7 @@ If the user asks to remove the logo, return:
 }
 
 If the user does not ask for images, do not include logoUrl or heroImageUrl.
+
 Current website data:
 ${JSON.stringify(siteData, null, 2)}
 
@@ -207,7 +206,32 @@ If section is "hero" and the user says "change the subtitle", return:
 If section is "services" and the user says "add ceramic coating", return:
 {
   "services": [
-    { "title": "Ceramic Coating", "description": "Long-lasting paint protection and gloss." }
+    {
+      "title": "Ceramic Coating",
+      "description": "Long-lasting paint protection and gloss."
+    }
+  ]
+}
+
+If editing a pricing page and the user says "add pricing tiers", return:
+
+{
+  "content": [
+    {
+      "type": "pricing",
+      "tiers": [
+        {
+          "name": "Basic",
+          "price": 500,
+          "description": "Entry level package"
+        },
+        {
+          "name": "Premium",
+          "price": 900,
+          "description": "Most popular package"
+        }
+      ]
+    }
   ]
 }
 
@@ -215,24 +239,29 @@ If no change is needed, return:
 {}
 `;
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-5.4",
-        input: aiPrompt
-      })
-    });
+    const response = await fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-5.4",
+          input: aiPrompt
+        })
+      }
+    );
 
     const result = await response.json();
 
     if (!response.ok) {
       console.error("OpenAI API error:", result);
+
       return res.status(500).json({
-        error: result.error?.message || "OpenAI request failed"
+        error:
+          result.error?.message || "OpenAI request failed"
       });
     }
 
@@ -247,6 +276,7 @@ If no change is needed, return:
       parsed = JSON.parse(outputText);
     } catch (parseError) {
       console.error("JSON parse error:", outputText);
+
       return res.status(500).json({
         error: "AI returned an invalid format. Try again."
       });
@@ -261,8 +291,12 @@ If no change is needed, return:
     }
 
     return res.status(200).json(cleanedUpdates);
+
   } catch (error) {
     console.error("Server error:", error);
-    return res.status(500).json({ error: "Server error" });
+
+    return res.status(500).json({
+      error: "Server error"
+    });
   }
 }
