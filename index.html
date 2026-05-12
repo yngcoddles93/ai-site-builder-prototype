@@ -649,7 +649,7 @@ pages: parsed.pages || [
     slug: slug,
     title: pageTitle,
     fileName: slug + ".html",
-    content: "This is the " + pageTitle + " page. Add your content here."
+    components: []
   });
 
   saveCurrentSite();
@@ -707,10 +707,36 @@ function renderPagesContent(data) {
     return;
   }
 
+  const componentsHtml = (current.components || []).map(c => {
+
+    if (c.type === "text") {
+      return `<p>${c.value}</p>`;
+    }
+
+    if (c.type === "pricing") {
+      return `
+        <div class="cards">
+          ${(c.tiers || []).map(t => `
+            <div class="card">
+              <h4>${t.name}</h4>
+              <p style="font-size:28px;font-weight:bold;">
+                $${t.price}
+              </p>
+              <p>${t.description || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    return "";
+
+  }).join("");
+
   pagesContent.innerHTML = `
     <div class="card">
       <h4>${current.title}</h4>
-      <p>${current.content || "Add content for this page."}</p>
+      ${componentsHtml || "<p>Add content for this page.</p>"}
     </div>
   `;
 }
