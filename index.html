@@ -764,6 +764,19 @@ if (c.type === "testimonial") {
   `;
 }
 
+if (c.type === "faq") {
+  return `
+    <div>
+      ${(c.items || []).map(item => `
+        <div class="card" style="margin-bottom:14px;">
+          <h4>${item.question || ""}</h4>
+          <p>${item.answer || ""}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 return "";
   }).join("");
 
@@ -1236,7 +1249,18 @@ function launchWebsite() {
     '</div>';
   }
 
-  return '';
+if (c.type === "faq") {
+  return '<div>' +
+    (c.items || []).map(function(item) {
+      return '<div class="card" style="margin-bottom:14px;">' +
+        '<h4>' + (item.question || '') + '</h4>' +
+        '<p>' + (item.answer || '') + '</p>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
+return '';
 
 }).join('');
 content.innerHTML =
