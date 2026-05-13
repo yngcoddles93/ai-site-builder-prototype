@@ -726,25 +726,45 @@ function renderPagesContent(data) {
       `;
     }
 
-    if (c.type === "button") {
-      return `
-        <a href="${c.link || "#"}"
-           style="
-             display:inline-block;
-             background:#3b82f6;
-             color:white;
-             padding:14px 24px;
-             border-radius:10px;
-             text-decoration:none;
-             font-weight:bold;
-             margin-top:16px;
-           ">
-          ${c.text || "Click Here"}
-        </a>
-      `;
-    }
+  if (c.type === "button") {
+  return `
+    <a href="${c.link || "#"}"
+       style="
+         display:inline-block;
+         background:#3b82f6;
+         color:white;
+         padding:14px 24px;
+         border-radius:10px;
+         text-decoration:none;
+         font-weight:bold;
+         margin-top:16px;
+       ">
+      ${c.text || "Click Here"}
+    </a>
+  `;
+}
 
-    return "";
+if (c.type === "testimonial") {
+  return `
+    <div class="cards">
+      ${(c.reviews || []).map(r => `
+        <div class="card">
+          <p style="font-size:20px;color:#facc15;margin-bottom:10px;">
+            ${"★".repeat(r.rating || 5)}
+          </p>
+
+          <p>"${r.quote || ""}"</p>
+
+          <h4 style="margin-top:14px;">
+            ${r.name || "Customer"}
+          </h4>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+return "";
   }).join("");
 
   pagesContent.innerHTML = `
@@ -1200,6 +1220,20 @@ function launchWebsite() {
     '">' +
       (c.text || 'Click Here') +
     '</a>';
+  }
+
+  if (c.type === "testimonial") {
+    return '<div class="cards">' +
+      (c.reviews || []).map(function(r) {
+        return '<div class="card">' +
+          '<p style="font-size:20px;color:#facc15;margin-bottom:10px;">' +
+            '★'.repeat(r.rating || 5) +
+          '</p>' +
+          '<p>"' + (r.quote || '') + '"</p>' +
+          '<h4 style="margin-top:14px;">' + (r.name || 'Customer') + '</h4>' +
+        '</div>';
+      }).join('') +
+    '</div>';
   }
 
   return '';
