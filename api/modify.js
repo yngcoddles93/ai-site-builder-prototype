@@ -76,7 +76,34 @@ Supported custom page response format:
 }
 
 For pricing sections, use:
+For testimonial sections, use:
 
+{
+  "content": [
+    {
+      "type": "testimonial",
+      "reviews": [
+        {
+          "name": "Sarah M.",
+          "rating": 5,
+          "quote": "Amazing experience and incredible results."
+        },
+        {
+          "name": "James R.",
+          "rating": 5,
+          "quote": "Professional, fast, and worth every dollar."
+        },
+        {
+          "name": "Emily T.",
+          "rating": 5,
+          "quote": "The finished product looked absolutely perfect."
+        }
+      ]
+    }
+  ]
+}
+
+If the user asks for testimonials, reviews, customer quotes, ratings, or social proof, return a testimonial component.
 {
   "content": [
     {
