@@ -111,6 +111,20 @@ For pricing sections, use:
 
 If the user asks for pricing, packages, tiers, plans, rates, or costs, return a pricing component.
 
+For button sections, use:
+
+{
+  "content": [
+    {
+      "type": "button",
+      "text": "Book Now",
+      "link": "#contact"
+    }
+  ]
+}
+
+If the user asks for a button, CTA, call to action, booking link, contact button, or quote button, return a button component.
+
 For testimonial sections, use:
 
 {
@@ -165,6 +179,8 @@ For FAQ sections, use:
 }
 
 If the user asks for FAQs, questions and answers, common questions, or help sections, return a faq component.
+
+Allowed image fields:
 - logoUrl
 - heroImageUrl
 
