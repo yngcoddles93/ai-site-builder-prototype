@@ -64,7 +64,14 @@ Do not modify anything outside these fields.
 
 If editing a custom page, return structured components instead of plain text.
 
-Supported custom page response format:
+Supported custom page component types:
+- text
+- pricing
+- button
+- testimonial
+- faq
+
+For normal text sections on custom pages, use:
 
 {
   "content": [
@@ -76,32 +83,50 @@ Supported custom page response format:
 }
 
 For pricing sections, use:
-For testimonial sections, use:
-For FAQ sections, use:
 
 {
   "content": [
     {
-      "type": "faq",
-      "items": [
+      "type": "pricing",
+      "tiers": [
         {
-          "question": "Do you offer mobile service?",
-          "answer": "Yes, we come directly to your location."
+          "name": "Basic",
+          "price": 500,
+          "description": "Short description"
         },
         {
-          "question": "How long does detailing take?",
-          "answer": "Most services take between 2 and 5 hours depending on the package."
+          "name": "Premium",
+          "price": 900,
+          "description": "Short description"
         },
         {
-          "question": "Do you provide ceramic coatings?",
-          "answer": "Yes, we offer long-term ceramic coating protection packages."
+          "name": "Elite",
+          "price": 1500,
+          "description": "Short description"
         }
       ]
     }
   ]
 }
 
-If the user asks for FAQs, questions and answers, common questions, or help sections, return a faq component.
+If the user asks for pricing, packages, tiers, plans, rates, or costs, return a pricing component.
+
+For button sections, use:
+
+{
+  "content": [
+    {
+      "type": "button",
+      "text": "Book Now",
+      "link": "#contact"
+    }
+  ]
+}
+
+If the user asks for a button, CTA, call to action, booking link, contact button, or quote button, return a button component.
+
+For testimonial sections, use:
+
 {
   "content": [
     {
@@ -128,30 +153,32 @@ If the user asks for FAQs, questions and answers, common questions, or help sect
 }
 
 If the user asks for testimonials, reviews, customer quotes, ratings, or social proof, return a testimonial component.
+
+For FAQ sections, use:
+
 {
   "content": [
     {
-      "type": "pricing",
-      "tiers": [
+      "type": "faq",
+      "items": [
         {
-          "name": "Basic",
-          "price": 500,
-          "description": "Short description"
+          "question": "Do you offer mobile service?",
+          "answer": "Yes, we come directly to your location."
         },
         {
-          "name": "Premium",
-          "price": 900,
-          "description": "Short description"
+          "question": "How long does detailing take?",
+          "answer": "Most services take between 2 and 5 hours depending on the package."
         },
         {
-          "name": "Elite",
-          "price": 1500,
-          "description": "Short description"
+          "question": "Do you provide ceramic coatings?",
+          "answer": "Yes, we offer long-term ceramic coating protection packages."
         }
       ]
     }
   ]
 }
+
+If the user asks for FAQs, questions and answers, common questions, or help sections, return a faq component.
 
 Allowed image fields:
 - logoUrl
@@ -265,7 +292,6 @@ If section is "services" and the user says "add ceramic coating", return:
 }
 
 If editing a pricing page and the user says "add pricing tiers", return:
-
 {
   "content": [
     {
@@ -280,6 +306,46 @@ If editing a pricing page and the user says "add pricing tiers", return:
           "name": "Premium",
           "price": 900,
           "description": "Most popular package"
+        }
+      ]
+    }
+  ]
+}
+
+If editing a testimonials page and the user says "add testimonials", return:
+{
+  "content": [
+    {
+      "type": "testimonial",
+      "reviews": [
+        {
+          "name": "Sarah M.",
+          "rating": 5,
+          "quote": "The service was professional, easy, and the results were excellent."
+        },
+        {
+          "name": "James R.",
+          "rating": 5,
+          "quote": "Everything looked polished, premium, and exactly how I wanted it."
+        }
+      ]
+    }
+  ]
+}
+
+If editing an FAQ page and the user says "add common questions", return:
+{
+  "content": [
+    {
+      "type": "faq",
+      "items": [
+        {
+          "question": "How do I get started?",
+          "answer": "Contact us with your needs and we will recommend the best option."
+        },
+        {
+          "question": "Do you offer custom packages?",
+          "answer": "Yes, packages can be customized based on your goals and budget."
         }
       ]
     }
