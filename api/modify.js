@@ -77,7 +77,31 @@ Supported custom page response format:
 
 For pricing sections, use:
 For testimonial sections, use:
+For FAQ sections, use:
 
+{
+  "content": [
+    {
+      "type": "faq",
+      "items": [
+        {
+          "question": "Do you offer mobile service?",
+          "answer": "Yes, we come directly to your location."
+        },
+        {
+          "question": "How long does detailing take?",
+          "answer": "Most services take between 2 and 5 hours depending on the package."
+        },
+        {
+          "question": "Do you provide ceramic coatings?",
+          "answer": "Yes, we offer long-term ceramic coating protection packages."
+        }
+      ]
+    }
+  ]
+}
+
+If the user asks for FAQs, questions and answers, common questions, or help sections, return a faq component.
 {
   "content": [
     {
