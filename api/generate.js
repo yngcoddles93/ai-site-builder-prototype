@@ -10,8 +10,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    const aiPrompt = `
+   const aiPrompt = `
 You are helping generate a simple website preview.
+
+This website builder must work for any type of business, industry, service, product, brand, creator, or organization.
+
+Do not assume the business is a car detailing business unless the user specifically says that.
+
+Adapt all copy, services, features, about text, contact text, calls to action, and tone to the business type described by the user.
 
 Return ONLY valid JSON with this exact structure:
 {
