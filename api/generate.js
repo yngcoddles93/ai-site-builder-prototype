@@ -21,6 +21,16 @@ Adapt all copy, services, features, about text, contact text, calls to action, a
 
 Return ONLY valid JSON with this exact structure:
 {
+  "theme": {
+    "background": "#0f172a",
+    "text": "#ffffff",
+    "primary": "#3b82f6",
+    "secondary": "#1e293b",
+    "accent": "#facc15",
+    "heroBackground": "#1d4ed8",
+    "navBackground": "#ffffff",
+    "navText": "#111111"
+  },
   "heroTitle": "string",
   "heroSubtitle": "string",
   "services": [
@@ -36,7 +46,17 @@ Return ONLY valid JSON with this exact structure:
   "about": "string",
   "contact": "string"
 }
+Choose theme colors that match the user's requested style, business type, and overall vibe.
 
+Examples:
+- luxury → black/gold
+- feminine → blush/cream
+- modern tech → dark blue/cyan
+- kids brand → bright playful colors
+- law firm → navy/white
+- fitness → dark/high contrast
+
+Use valid hex color codes only.
 Make the content fit this website request:
 ${prompt}
 `;
