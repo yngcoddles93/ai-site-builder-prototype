@@ -61,7 +61,41 @@ Only modify fields in this section:
 ${allowedKeys.join(", ")}
 
 Do not modify anything outside these fields.
+Theme/color support:
 
+If the user asks to change colors, style, vibe, branding, appearance, mood, visual design, or says things like:
+- black and gold
+- luxury
+- modern
+- feminine
+- dark mode
+- elegant
+- minimal
+- bright
+- colorful
+- premium
+- neon
+- soft pastel
+
+Return a theme object.
+
+Use this structure:
+
+{
+  "theme": {
+    "background": "#0f172a",
+    "text": "#ffffff",
+    "primary": "#3b82f6",
+    "secondary": "#1e293b",
+    "accent": "#facc15",
+    "heroBackground": "#1d4ed8",
+    "navBackground": "#ffffff",
+    "navText": "#111111"
+  }
+}
+
+Use valid hex colors only.
+Only return theme if the request is visual/design related.
 If editing a custom page, return structured components instead of plain text.
 
 Supported custom page component types:
