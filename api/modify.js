@@ -25,16 +25,18 @@ export default async function handler(req, res) {
       features: ["features"],
       about: ["about"],
       contact: ["contact"],
-      all: [
-        "heroTitle",
-        "heroSubtitle",
-        "services",
-        "features",
-        "about",
-        "contact",
-        "logoUrl",
-        "heroImageUrl"
-      ]
+     all: [
+  "heroTitle",
+  "heroSubtitle",
+  "services",
+  "features",
+  "about",
+  "contact",
+  "logoUrl",
+  "heroImageUrl",
+  "theme",
+  "layout"
+]
     };
 
     let allowedKeys = sectionFieldMap[section];
