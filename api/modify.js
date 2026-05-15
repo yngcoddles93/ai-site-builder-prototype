@@ -13,7 +13,14 @@ export default async function handler(req, res) {
     }
 
     const sectionFieldMap = {
-      hero: ["heroTitle", "heroSubtitle", "logoUrl", "heroImageUrl"],
+      hero: [
+  "heroTitle",
+  "heroSubtitle",
+  "logoUrl",
+  "heroImageUrl",
+  "theme",
+  "layout"
+],
       services: ["services"],
       features: ["features"],
       about: ["about"],
@@ -93,7 +100,51 @@ Use this structure:
     "navText": "#111111"
   }
 }
+Layout/alignment support:
 
+If the user asks to:
+- center content
+- left align content
+- move hero image
+- center navbar
+- make layout modern
+- make layout balanced
+- make sections centered
+- move image left/right
+
+Return a layout object.
+
+Use this structure:
+
+{
+  "layout": {
+    "heroAlign": "left",
+    "sectionAlign": "left",
+    "heroImagePosition": "right",
+    "navAlign": "space-between"
+  }
+}
+
+Allowed values:
+
+heroAlign:
+- "left"
+- "center"
+
+sectionAlign:
+- "left"
+- "center"
+
+heroImagePosition:
+- "left"
+- "right"
+
+navAlign:
+- "space-between"
+- "center"
+- "space-around"
+
+Only return layout if the request is layout/alignment related.
 Use valid hex colors only.
 Only return theme if the request is visual/design related.
 If editing a custom page, return structured components instead of plain text.
