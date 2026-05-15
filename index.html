@@ -382,6 +382,16 @@
 
   <script>
 let siteData = {
+  theme: {
+  background: "#0f172a",
+  text: "#ffffff",
+  primary: "#3b82f6",
+  secondary: "#1e293b",
+  accent: "#facc15",
+  heroBackground: "#1d4ed8",
+  navBackground: "#ffffff",
+  navText: "#111111"
+},
   heroTitle: "Business Website",
   heroSubtitle: "A strong modern website built from your prompt.",
   services: [],
@@ -511,8 +521,19 @@ function applySuggestedLogo(index) {
       if (saved) {
         const parsed = JSON.parse(saved);
 
-        siteData = {
-          heroTitle: parsed.heroTitle || "Business Website",
+       siteData = {
+  theme: parsed.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+
+  heroTitle: parsed.heroTitle || "Business Website",
           heroSubtitle: parsed.heroSubtitle || "A strong modern website built from your prompt.",
           services: parsed.services || [],
           features: parsed.features || [],
@@ -592,7 +613,18 @@ pages: parsed.pages || [
 
       const restored = history[index].data || {};
 
-    siteData = {
+   siteData = {
+  theme: restored.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+
   heroTitle: restored.heroTitle || "Business Website",
   heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
   services: restored.services || [],
@@ -807,6 +839,60 @@ function switchPage(slug) {
 function renderSite(data) {
   renderPreviewNavbar(data);
   renderPagesContent(data);
+  const theme = data.theme || {};
+
+document.body.style.background =
+  theme.background || "#0f172a";
+
+document.body.style.color =
+  theme.text || "#ffffff";
+
+const preview = document.querySelector(".preview");
+
+if (preview) {
+  preview.style.background =
+    theme.background || "#111827";
+}
+
+const navbar = document.querySelector(".site-navbar");
+
+if (navbar) {
+  navbar.style.background =
+    theme.navBackground || "#ffffff";
+
+  navbar.style.color =
+    theme.navText || "#111111";
+}
+
+document.querySelectorAll(".nav-links a").forEach(link => {
+  link.style.color =
+    theme.navText || "#111111";
+});
+
+const hero = document.querySelector(".hero");
+
+if (hero) {
+  hero.style.background = `
+    linear-gradient(
+      135deg,
+      ${theme.heroBackground || "#1d4ed8"},
+      ${theme.background || "#0f172a"}
+    )
+  `;
+}
+
+document.querySelectorAll(".card").forEach(card => {
+  card.style.background =
+    theme.secondary || "#1e293b";
+
+  card.style.color =
+    theme.text || "#ffffff";
+});
+
+document.querySelectorAll("button").forEach(button => {
+  button.style.background =
+    theme.primary || "#3b82f6";
+});
       const previewBusinessName = document.getElementById("previewBusinessName");
 const previewLogo = document.getElementById("previewLogo");
 const siteLogo = document.getElementById("siteLogo");
@@ -948,15 +1034,26 @@ document.getElementById("launchBtn").style.display = "inline-block";
 
         saveVersionBeforeChange();
 
-        siteData = {
-          heroTitle: data.heroTitle || "Business Website",
-          heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
-          services: data.services || [],
-          features: data.features || [],
-          about: data.about || "",
-          contact: data.contact || "",
-          logoUrl: data.logoUrl || "",
-          heroImageUrl: data.heroImageUrl || "",
+    siteData = {
+  theme: data.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+
+  heroTitle: data.heroTitle || "Business Website",
+  heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
+  services: data.services || [],
+  features: data.features || [],
+  about: data.about || "",
+  contact: data.contact || "",
+  logoUrl: data.logoUrl || "",
+  heroImageUrl: data.heroImageUrl || "",
 
 pages: siteData.pages || [
   {
