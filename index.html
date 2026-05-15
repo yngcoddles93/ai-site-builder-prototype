@@ -392,6 +392,12 @@ let siteData = {
   navBackground: "#ffffff",
   navText: "#111111"
 },
+  layout: {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
   heroTitle: "Business Website",
   heroSubtitle: "A strong modern website built from your prompt.",
   services: [],
@@ -532,7 +538,12 @@ function applySuggestedLogo(index) {
     navBackground: "#ffffff",
     navText: "#111111"
   },
-
+layout: parsed.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
   heroTitle: parsed.heroTitle || "Business Website",
           heroSubtitle: parsed.heroSubtitle || "A strong modern website built from your prompt.",
           services: parsed.services || [],
@@ -624,7 +635,12 @@ pages: parsed.pages || [
     navBackground: "#ffffff",
     navText: "#111111"
   },
-
+layout: restored.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
   heroTitle: restored.heroTitle || "Business Website",
   heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
   services: restored.services || [],
@@ -840,7 +856,7 @@ function renderSite(data) {
   renderPreviewNavbar(data);
   renderPagesContent(data);
   const theme = data.theme || {};
-
+const layout = data.layout || {};
 document.body.style.background =
   theme.background || "#0f172a";
 
@@ -893,6 +909,31 @@ document.querySelectorAll("button").forEach(button => {
   button.style.background =
     theme.primary || "#3b82f6";
 });
+  const heroText = document.querySelector(".hero-text");
+
+if (heroText) {
+  heroText.style.textAlign =
+    layout.heroAlign || "left";
+}
+
+document.querySelectorAll(".section").forEach(section => {
+  section.style.textAlign =
+    layout.sectionAlign || "left";
+});
+
+const heroContainer = document.querySelector(".hero");
+
+if (heroContainer) {
+  heroContainer.style.flexDirection =
+    layout.heroImagePosition === "left"
+      ? "row-reverse"
+      : "row";
+}
+
+if (navbar) {
+  navbar.style.justifyContent =
+    layout.navAlign || "space-between";
+}
       const previewBusinessName = document.getElementById("previewBusinessName");
 const previewLogo = document.getElementById("previewLogo");
 const siteLogo = document.getElementById("siteLogo");
@@ -1045,7 +1086,12 @@ document.getElementById("launchBtn").style.display = "inline-block";
     navBackground: "#ffffff",
     navText: "#111111"
   },
-
+layout: data.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
   heroTitle: data.heroTitle || "Business Website",
   heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
   services: data.services || [],
