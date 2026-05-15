@@ -85,7 +85,7 @@ line-height: 1.05;
 font-size: 22px;
 max-width: 760px;
 margin: 0 auto;
-color: #4b5563;
+color: inherit;
 }
 
 /* SECTIONS */
@@ -218,7 +218,49 @@ container.appendChild(card);
 }
 
 function renderLaunchedSite(data) {
+const theme = data.theme || {};
+const layout = data.layout || {};
 
+document.body.style.background = theme.background || "#f8fafc";
+document.body.style.color = theme.text || "#111827";
+
+const navbar = document.querySelector(".site-navbar");
+if (navbar) {
+  navbar.style.background = theme.navBackground || "white";
+  navbar.style.color = theme.navText || "#111111";
+  navbar.style.justifyContent = layout.navAlign || "space-between";
+}
+
+document.querySelectorAll(".nav-links a").forEach(link => {
+  link.style.color = theme.navText || "#111111";
+});
+
+const hero = document.querySelector(".hero");
+if (hero) {
+  hero.style.background = `
+    linear-gradient(
+      135deg,
+      ${theme.heroBackground || "#eef2ff"},
+      ${theme.background || "#f8fafc"}
+    )
+  `;
+  hero.style.textAlign = layout.heroAlign || "center";
+}
+
+document.querySelectorAll("section").forEach(section => {
+  section.style.textAlign = layout.sectionAlign || "left";
+});
+
+document.querySelectorAll(".card, .text-block").forEach(box => {
+  box.style.background = theme.secondary || "white";
+  box.style.color = theme.text || "#111827";
+});
+
+const footer = document.querySelector("footer");
+if (footer) {
+  footer.style.background = theme.secondary || "#111827";
+  footer.style.color = theme.text || "white";
+}
 document.getElementById("heroTitle").textContent =
 data.heroTitle || "Website Title";
 
