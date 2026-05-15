@@ -31,6 +31,12 @@ Return ONLY valid JSON with this exact structure:
     "navBackground": "#ffffff",
     "navText": "#111111"
   },
+  "layout": {
+    "heroAlign": "left",
+    "sectionAlign": "left",
+    "heroImagePosition": "right",
+    "navAlign": "space-between"
+  },
   "heroTitle": "string",
   "heroSubtitle": "string",
   "services": [
@@ -57,6 +63,15 @@ Examples:
 - fitness → dark/high contrast
 
 Use valid hex color codes only.
+
+Choose layout settings that fit the brand style.
+
+Allowed values:
+heroAlign: "left" or "center"
+sectionAlign: "left" or "center"
+heroImagePosition: "left" or "right"
+navAlign: "space-between", "center", or "space-around"
+
 Make the content fit this website request:
 ${prompt}
 `;
