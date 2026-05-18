@@ -531,9 +531,24 @@ function applySuggestedLogo(index) {
     const SITE_HISTORY_KEY = "siteHistory";
     const MAX_HISTORY = 5;
 
-    function saveCurrentSite() {
-      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(siteData));
-    }
+   function cleanSiteDataForStorage(data) {
+  const safeCopy = JSON.parse(JSON.stringify(data));
+
+  if (safeCopy.heroImageUrl && safeCopy.heroImageUrl.startsWith("data:image")) {
+    safeCopy.heroImageUrl = "";
+  }
+
+  if (safeCopy.logoUrl && safeCopy.logoUrl.startsWith("data:image")) {
+    safeCopy.logoUrl = "";
+  }
+
+  return safeCopy;
+}
+
+function saveCurrentSite() {
+  const safeSiteData = cleanSiteDataForStorage(siteData);
+  localStorage.setItem(SITE_DATA_KEY, JSON.stringify(safeSiteData));
+}
 
     function loadSavedSite() {
       const saved = localStorage.getItem(SITE_DATA_KEY);
@@ -585,8 +600,7 @@ pages: parsed.pages || [
     const history =
       JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
 
-    const safeCopy =
-      JSON.parse(JSON.stringify(siteData));
+    const safeCopy = cleanSiteDataForStorage(siteData);
 
     if (
       safeCopy.heroImageUrl &&
@@ -1428,17 +1442,20 @@ function launchWebsite() {
   }
 
   try {
+    const safeSiteData =
+      cleanSiteDataForStorage(siteData);
+
     const siteId = "site-" + Date.now();
 
     localStorage.setItem(
       siteId,
-      JSON.stringify(siteData)
+      JSON.stringify(safeSiteData)
     );
 
-    const siteUrl =
-      "/site.html?id=" + siteId;
-
-    window.open(siteUrl, "_blank");
+    window.open(
+      "/site.html?id=" + siteId,
+      "_blank"
+    );
 
     document.getElementById(
       "statusText"
@@ -1450,7 +1467,7 @@ function launchWebsite() {
     document.getElementById(
       "statusText"
     ).textContent =
-      "Launch failed. Site data is too large.";
+      "Launch failed: " + error.message;
   }
 }
 function exportWebsite() {
