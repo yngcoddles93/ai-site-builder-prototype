@@ -1,6 +1,10 @@
+import { put } from "@vercel/blob";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
@@ -31,9 +35,8 @@ modern website hero image
 no text
 no logos
 no watermark
-clean composition
 premium lighting
-wide website banner style
+wide cinematic composition
 `;
 
     const imageResponse = await fetch(
@@ -42,7 +45,8 @@ wide website banner style
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+          Authorization:
+            `Bearer ${process.env.OPENAI_API_KEY}`
         },
         body: JSON.stringify({
           model: "gpt-image-1",
@@ -62,19 +66,31 @@ wide website banner style
       });
     }
 
-    const base64Image = imageData.data?.[0]?.b64_json;
+    const base64Image =
+      imageData.data?.[0]?.b64_json;
 
     if (!base64Image) {
       return res.status(500).json({
-        error: "No image was returned from OpenAI"
+        error: "No image returned"
       });
     }
 
-    const imageUrl =
-      `data:image/png;base64,${base64Image}`;
+    const buffer = Buffer.from(
+      base64Image,
+      "base64"
+    );
+
+    const blob = await put(
+      `hero-${Date.now()}.png`,
+      buffer,
+      {
+        access: "public",
+        contentType: "image/png"
+      }
+    );
 
     return res.status(200).json({
-      imageUrl
+      imageUrl: blob.url
     });
 
   } catch (error) {
