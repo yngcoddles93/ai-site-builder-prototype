@@ -529,7 +529,7 @@ function applySuggestedLogo(index) {
     let currentEditSection = "all";
     const SITE_DATA_KEY = "siteData";
     const SITE_HISTORY_KEY = "siteHistory";
-    const MAX_HISTORY = 20;
+    const MAX_HISTORY = 5;
 
     function saveCurrentSite() {
       localStorage.setItem(SITE_DATA_KEY, JSON.stringify(siteData));
@@ -580,21 +580,50 @@ pages: parsed.pages || [
       }
     }
 
-    function saveVersionBeforeChange() {
-      const history = JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+   function saveVersionBeforeChange() {
+  try {
+    const history =
+      JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
 
-      history.unshift({
-        timestamp: new Date().toISOString(),
-        data: JSON.parse(JSON.stringify(siteData))
-      });
+    const safeCopy =
+      JSON.parse(JSON.stringify(siteData));
 
-      if (history.length > MAX_HISTORY) {
-        history.pop();
-      }
-
-      localStorage.setItem(SITE_HISTORY_KEY, JSON.stringify(history));
+    if (
+      safeCopy.heroImageUrl &&
+      safeCopy.heroImageUrl.startsWith("data:image")
+    ) {
+      safeCopy.heroImageUrl = "";
     }
 
+    if (
+      safeCopy.logoUrl &&
+      safeCopy.logoUrl.startsWith("data:image")
+    ) {
+      safeCopy.logoUrl = "";
+    }
+
+    history.unshift({
+      timestamp: new Date().toISOString(),
+      data: safeCopy
+    });
+
+    if (history.length > MAX_HISTORY) {
+      history.length = MAX_HISTORY;
+    }
+
+    localStorage.setItem(
+      SITE_HISTORY_KEY,
+      JSON.stringify(history)
+    );
+  } catch (error) {
+    console.warn(
+      "Could not save version history:",
+      error
+    );
+
+    localStorage.removeItem(SITE_HISTORY_KEY);
+  }
+}
     function getVersionHistory() {
       return JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
     }
