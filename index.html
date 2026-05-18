@@ -296,15 +296,29 @@
 <button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
 </div>
 
-    <div class="image-controls">
-      <label for="logoUrlInput">Logo Image URL</label>
-      <input id="logoUrlInput" placeholder="Paste logo image URL here" />
+   <div class="image-controls">
+  <h3>Image Studio</h3>
 
-      <label for="heroImageUrlInput">Hero Image URL</label>
-      <input id="heroImageUrlInput" placeholder="Paste hero image URL here" />
+  <label for="logoUrlInput">Logo Image URL</label>
+  <input id="logoUrlInput" placeholder="Paste logo image URL here" />
 
-      <button onclick="applyImageChanges()">Apply Images</button>
-    </div>
+  <label for="heroImageUrlInput">Hero Image URL</label>
+  <input id="heroImageUrlInput" placeholder="Paste hero image URL here" />
+
+  <button onclick="applyImageChanges()">Apply Images</button>
+
+  <hr style="border:0;border-top:1px solid #1f2937;margin:22px 0;">
+
+  <label for="heroImagePromptInput">Generate Hero Image With AI</label>
+  <textarea
+    id="heroImagePromptInput"
+    placeholder="Example: Luxury car detailing garage, black and gold lighting, premium cinematic photo"
+  ></textarea>
+
+  <button onclick="generateHeroImage()">Generate Hero Image</button>
+
+  <div id="heroImageResult" style="margin-top:16px;"></div>
+</div>
 
     <div class="logo-suggestion-box">
       <h3>AI Logo Suggestions</h3>
@@ -1211,7 +1225,100 @@ renderSite(siteData);
 
       document.getElementById("statusText").textContent = "Images updated.";
     }
+async function generateHeroImage() {
+  const promptInput =
+    document.getElementById("heroImagePromptInput");
 
+  const resultBox =
+    document.getElementById("heroImageResult");
+
+  const statusText =
+    document.getElementById("statusText");
+
+  const prompt = promptInput.value.trim();
+
+  if (!prompt) {
+    statusText.textContent =
+      "Describe the hero image you want first.";
+    return;
+  }
+
+  statusText.textContent =
+    "Generating hero image...";
+
+  resultBox.innerHTML =
+    "<p>Generating image...</p>";
+
+  try {
+    const response = await fetch(
+      "/api/generate-image",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt,
+          siteData
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Image generation failed."
+      );
+    }
+
+    saveVersionBeforeChange();
+
+    siteData.heroImageUrl =
+      data.imageUrl;
+
+    const heroInput =
+      document.getElementById(
+        "heroImageUrlInput"
+      );
+
+    if (heroInput) {
+      heroInput.value = data.imageUrl;
+    }
+
+    saveCurrentSite();
+    renderSite(siteData);
+    renderHistoryList();
+
+    resultBox.innerHTML = `
+      <img
+        src="${data.imageUrl}"
+        style="
+          width:100%;
+          max-width:420px;
+          border-radius:14px;
+          margin-top:10px;
+        "
+      />
+    `;
+
+    statusText.textContent =
+      "Hero image generated and applied.";
+
+  } catch (error) {
+    console.error(error);
+
+    statusText.textContent =
+      "Image generation failed: " +
+      error.message;
+
+    resultBox.innerHTML = `
+      <p style="color:#fca5a5;">
+        ${error.message}
+      </p>
+    `;
+  }
+}
     function setEditSection(section) {
       currentEditSection = section;
       console.log("Editing section:", section);
