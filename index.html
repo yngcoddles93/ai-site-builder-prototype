@@ -1384,11 +1384,31 @@ function launchWebsite() {
     return;
   }
 
-  const siteId = "site-" + Date.now();
+  try {
+    const siteId = "site-" + Date.now();
 
-  localStorage.setItem(siteId, JSON.stringify(siteData));
+    localStorage.setItem(
+      siteId,
+      JSON.stringify(siteData)
+    );
 
-  window.open("/site.html?id=" + siteId, "_blank");
+    const siteUrl =
+      "/site.html?id=" + siteId;
+
+    window.open(siteUrl, "_blank");
+
+    document.getElementById(
+      "statusText"
+    ).textContent = "Website launched.";
+
+  } catch (error) {
+    console.error("Launch failed:", error);
+
+    document.getElementById(
+      "statusText"
+    ).textContent =
+      "Launch failed. Site data is too large.";
+  }
 }
 function exportWebsite() {
   const heroTitle = siteData.heroTitle || "Business Website";
