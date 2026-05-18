@@ -1182,7 +1182,21 @@ pages: siteData.pages || [
 
       try {
         saveVersionBeforeChange();
+const safeSiteData = JSON.parse(JSON.stringify(siteData));
 
+if (
+  safeSiteData.heroImageUrl &&
+  safeSiteData.heroImageUrl.startsWith("data:image")
+) {
+  safeSiteData.heroImageUrl = "";
+}
+
+if (
+  safeSiteData.logoUrl &&
+  safeSiteData.logoUrl.startsWith("data:image")
+) {
+  safeSiteData.logoUrl = "";
+}
         const response = await fetch("/api/modify", {
           method: "POST",
           headers: {
@@ -1190,7 +1204,7 @@ pages: siteData.pages || [
           },
           body: JSON.stringify({
             prompt: editPrompt,
-            siteData: siteData,
+            siteData: safeSiteData,
            section: currentPage === "home" ? currentEditSection : currentPage
           })
         });
