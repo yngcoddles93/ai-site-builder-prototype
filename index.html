@@ -1544,12 +1544,28 @@ function launchWebsite() {
 
     window.loadedProjects = data.websites;
 
-    projectsList.innerHTML = data.websites.map((site, index) => `
-      <div class="card" style="margin-bottom:12px;">
-        <h4>${site.title || "Untitled Website"}</h4>
-        <button onclick="openProject(${index})">Open Project</button>
-      </div>
-    `).join("");
+   projectsList.innerHTML = data.websites.map((site, index) => {
+  const updatedDate = site.updated_at
+    ? new Date(site.updated_at).toLocaleString()
+    : "Unknown";
+
+  const createdDate = site.created_at
+    ? new Date(site.created_at).toLocaleString()
+    : "Unknown";
+
+  return `
+    <div class="card" style="margin-bottom:12px;">
+      <h4>${site.title || "Untitled Website"}</h4>
+      <p style="color:#cbd5e1; margin:6px 0;">
+        Last saved: ${updatedDate}
+      </p>
+      <p style="color:#94a3b8; margin:6px 0;">
+        Created: ${createdDate}
+      </p>
+      <button onclick="openProject(${index})">Open Project</button>
+    </div>
+  `;
+}).join("");
 
     document.getElementById("statusText").textContent =
       "Projects loaded.";
