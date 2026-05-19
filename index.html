@@ -294,8 +294,11 @@
  <button onclick="addPage()">Add Page</button>
 <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
 <button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
-    <button onclick="saveProject()">Save Project</button>
+   <button onclick="saveProject()">Save Project</button>
+<button onclick="loadProjects()">Load Projects</button>
 </div>
+
+<div id="projectsList" style="margin-top:15px;"></div>
 
    <div class="image-controls">
   <h3>Image Studio</h3>
@@ -1522,6 +1525,58 @@ function launchWebsite() {
     ).textContent =
       "Save failed: " + error.message;
   }
+}
+    async function loadProjects() {
+  try {
+    const response = await fetch("/api/load-sites?userId=demo-user");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    const projectsList = document.getElementById("projectsList");
+
+    if (!data.websites || data.websites.length === 0) {
+      projectsList.innerHTML = "<p>No saved projects yet.</p>";
+      return;
+    }
+
+    window.loadedProjects = data.websites;
+
+    projectsList.innerHTML = data.websites.map((site, index) => `
+      <div class="card" style="margin-bottom:12px;">
+        <h4>${site.title || "Untitled Website"}</h4>
+        <button onclick="openProject(${index})">Open Project</button>
+      </div>
+    `).join("");
+
+    document.getElementById("statusText").textContent =
+      "Projects loaded.";
+  } catch (error) {
+    document.getElementById("statusText").textContent =
+      "Load failed: " + error.message;
+  }
+}
+
+function openProject(index) {
+  const project = window.loadedProjects[index];
+
+  if (!project) {
+    alert("Project not found.");
+    return;
+  }
+
+  saveVersionBeforeChange();
+
+  siteData = project.site_data;
+
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent =
+    "Project opened.";
 }
 function exportWebsite() {
   const heroTitle = siteData.heroTitle || "Business Website";
