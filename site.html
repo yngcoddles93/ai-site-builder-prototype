@@ -145,12 +145,7 @@ margin-top: 40px;
 <span id="launchedBusinessName">Website</span>
 </div>
 
-<div class="nav-links">
-<a href="#home">Home</a>
-<a href="#services">Services</a>
-<a href="#about">About</a>
-<a href="#contact">Contact</a>
-</div>
+<div class="nav-links" id="launchedNavLinks"></div>
 </nav>
 
 <main>
@@ -180,7 +175,10 @@ margin-top: 40px;
 <h2>Contact</h2>
 <div class="text-block" id="contactText"></div>
 </section>
-
+<section id="customPageSection" style="display:none;">
+<h2 id="customPageTitle"></h2>
+<div id="customPageContent"></div>
+</section>
 </main>
 
 <footer>
@@ -216,8 +214,121 @@ card.innerHTML = `
 container.appendChild(card);
 });
 }
+let launchedSiteData = null;
 
+function renderLaunchedNavbar(data) {
+  const navLinks = document.getElementById("launchedNavLinks");
+  if (!navLinks) return;
+
+  const pages = data.pages || [
+    { slug: "home", title: "Home" }
+  ];
+
+  navLinks.innerHTML = pages.map(page => `
+    <a href="#" onclick="showLaunchedPage('${page.slug}')">${page.title}</a>
+  `).join("");
+
+  navLinks.innerHTML += `
+    <a href="#" onclick="showLaunchedPage('services')">Services</a>
+    <a href="#" onclick="showLaunchedPage('about')">About</a>
+    <a href="#" onclick="showLaunchedPage('contact')">Contact</a>
+  `;
+}
+
+function renderLaunchedComponents(components) {
+  return (components || []).map(c => {
+    if (c.type === "text") {
+      return `<div class="text-block">${c.value || ""}</div>`;
+    }
+
+    if (c.type === "pricing") {
+      return `
+        <div class="cards">
+          ${(c.tiers || []).map(t => `
+            <div class="card">
+              <h3>${t.name || ""}</h3>
+              <p style="font-size:30px;font-weight:bold;">$${t.price || ""}</p>
+              <p>${t.description || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (c.type === "button") {
+      return `
+        <a href="${c.link || "#"}"
+           style="display:inline-block;background:#3b82f6;color:white;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:18px;">
+          ${c.text || "Click Here"}
+        </a>
+      `;
+    }
+
+    if (c.type === "testimonial") {
+      return `
+        <div class="cards">
+          ${(c.reviews || []).map(r => `
+            <div class="card">
+              <p>${"★".repeat(r.rating || 5)}</p>
+              <p>"${r.quote || ""}"</p>
+              <strong>${r.name || "Customer"}</strong>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (c.type === "faq") {
+      return `
+        <div>
+          ${(c.items || []).map(item => `
+            <div class="card" style="margin-bottom:14px;">
+              <h3>${item.question || ""}</h3>
+              <p>${item.answer || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    return "";
+  }).join("");
+}
+
+function showLaunchedPage(slug) {
+  if (!launchedSiteData) return;
+
+  const home = document.getElementById("home");
+  const services = document.getElementById("services");
+  const about = document.getElementById("about");
+  const contact = document.getElementById("contact");
+  const custom = document.getElementById("customPageSection");
+
+  home.style.display = slug === "home" ? "block" : "none";
+  services.style.display = slug === "home" || slug === "services" ? "block" : "none";
+  about.style.display = slug === "home" || slug === "about" ? "block" : "none";
+  contact.style.display = slug === "home" || slug === "contact" ? "block" : "none";
+
+  custom.style.display = "none";
+
+  const page = (launchedSiteData.pages || []).find(p => p.slug === slug);
+
+  if (page && slug !== "home") {
+    home.style.display = "none";
+    services.style.display = "none";
+    about.style.display = "none";
+    contact.style.display = "none";
+
+    document.getElementById("customPageTitle").textContent = page.title || "";
+    document.getElementById("customPageContent").innerHTML =
+      renderLaunchedComponents(page.components || []);
+
+    custom.style.display = "block";
+  }
+}
 function renderLaunchedSite(data) {
+  launchedSiteData = data;
+renderLaunchedNavbar(data);
 const theme = data.theme || {};
 const layout = data.layout || {};
 
