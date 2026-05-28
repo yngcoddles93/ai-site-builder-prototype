@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Site Builder Prototype</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+#launchBtn {
+  display: inline-block !important;
+}
+    .container {
+      max-width: 960px;
+      margin: 60px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtext {
+      font-size: 18px;
+      color: #cbd5e1;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      padding: 15px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 18px;
+      padding: 14px 28px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .status {
+      margin-top: 12px;
+      color: #cbd5e1;
+      min-height: 24px;
+    }
+
+    .image-controls {
+      margin: 20px 0;
+      background: #111827;
+      border: 1px solid #1f2937;
+      padding: 18px;
+      border-radius: 14px;
+    }
+
+    .image-controls label {
+      display: block;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .preview {
+      margin-top: 35px;
+      background: #111827;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #1f2937;
+    }
+
+    .site-header {
+      padding: 20px 30px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .site-logo {
+      max-height: 60px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .hero {
+      padding: 55px 30px;
+      background: linear-gradient(135deg, #1d4ed8, #0f172a);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .hero h2 {
+      font-size: 38px;
+      margin: 0 0 12px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #dbeafe;
+      margin: 0;
+      max-width: 700px;
+    }
+
+    .hero-image {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .section {
+      padding: 30px;
+      border-top: 1px solid #1f2937;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 18px;
+      border-radius: 14px;
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .contact-box {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 14px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+    .logo-suggestion-box {
+  margin: 20px 0;
+  background: #111827;
+  border: 1px solid #1f2937;
+  padding: 18px;
+  border-radius: 14px;
+}
+
+.logo-options-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.logo-option {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+
+.logo-option img {
+  max-width: 100%;
+  height: 80px;
+  object-fit: contain;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.logo-option button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+    .site-navbar {
+  width: 100%;
+  padding: 18px 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.nav-brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  color: #111;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav-links a:hover {
+  opacity: 0.7;
+}
+    
+  </style>
+</head>
+
+<body>
+  <div class="container">
+   <h1>TEST UPDATED VERSION</h1>
+    <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
+
+    <textarea id="promptInput" placeholder="Example: Build a modern website for a mobile detailing business with a dark theme, services, pricing, testimonials, and contact section."></textarea>
+    <br />
+    <button onclick="generateSite()">Generate Website</button>
+
+    <br /><br />
+
+    <div style="margin-bottom:10px;" id="editSectionButtons">
+      <button id="btn-hero" onclick="setEditSection('hero')">Edit Hero</button>
+      <button id="btn-services" onclick="setEditSection('services')">Edit Services</button>
+      <button id="btn-features" onclick="setEditSection('features')">Edit Features</button>
+      <button id="btn-about" onclick="setEditSection('about')">Edit About</button>
+      <button id="btn-contact" onclick="setEditSection('contact')">Edit Contact</button>
+      <button id="btn-all" onclick="setEditSection('all')">Edit Entire Site</button>
+    </div>
+
+  <div style="margin-bottom:10px;">
+ <button onclick="addPage()">Add Page</button>
+<button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
+<button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
+   <button onclick="saveProject()">Save Project</button>
+<button onclick="loadProjects()">Load Projects</button>
+</div>
+
+<div id="projectsList" style="margin-top:15px;"></div>
+
+   <div class="image-controls">
+  <h3>Image Studio</h3>
+
+  <label for="logoUrlInput">Logo Image URL</label>
+  <input id="logoUrlInput" placeholder="Paste logo image URL here" />
+
+  <label for="heroImageUrlInput">Hero Image URL</label>
+  <input id="heroImageUrlInput" placeholder="Paste hero image URL here" />
+
+  <button onclick="applyImageChanges()">Apply Images</button>
+
+  <hr style="border:0;border-top:1px solid #1f2937;margin:22px 0;">
+
+  <label for="heroImagePromptInput">Generate Hero Image With AI</label>
+  <textarea
+    id="heroImagePromptInput"
+    placeholder="Example: Luxury car detailing garage, black and gold lighting, premium cinematic photo"
+  ></textarea>
+
+  <button onclick="generateHeroImage()">Generate Hero Image</button>
+
+  <div id="heroImageResult" style="margin-top:16px;"></div>
+</div>
+
+    <div class="logo-suggestion-box">
+      <h3>AI Logo Suggestions</h3>
+
+      <textarea
+        id="logoPromptInput"
+        placeholder="Example: Give me premium black and gold logo options for a luxury car detailing business"
+      ></textarea>
+
+      <button onclick="suggestLogos()">Suggest Logos</button>
+
+      <div id="logoOptionsGrid" class="logo-options-grid"></div>
+    </div>
+<p id="editingLabel" style="color:#cbd5e1; font-weight:bold; margin-bottom:8px;">
+  Editing: Home
+</p>
+    <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
+    <br />
+   <button onclick="modifySite()">Modify Current Page</button>
+    <div class="status" id="statusText"></div>
+
+    <div class="preview" id="previewBox" style="display:none;">
+      <nav class="site-navbar">
+  <div class="nav-brand">
+    <img id="previewLogo" src="" alt="Logo" style="display:none;">
+    <span id="previewBusinessName">Business Website</span>
+  </div>
+
+<div class="nav-links" id="previewNavLinks"></div>
+</nav>
+      <div class="site-header">
+        <img id="siteLogo" class="site-logo" src="" alt="Logo" style="display:none;" />
+      </div>
+
+      <div class="hero" id="home">
+        <div class="hero-text">
+          <h2 id="heroTitle">Your website title will appear here</h2>
+          <p id="heroSubtitle">Your AI-generated subtitle will appear here.</p>
+        </div>
+
+        <img id="heroImage" class="hero-image" src="" alt="Hero image" style="display:none;" />
+      </div>
+
+   <div class="section" id="services">
+  <h3>Services</h3>
+  <div class="cards" id="servicesGrid"></div>
+</div>
+
+<div class="section" id="features">
+  <h3>Why Choose Us</h3>
+  <div class="cards" id="featuresGrid"></div>
+</div>
+
+<div class="section" id="about">
+  <h3>About</h3>
+  <p id="aboutText">Your business description will appear here.</p>
+</div>
+
+<div class="section" id="contact">
+  <h3>Contact</h3>
+  <p id="contactText">Your contact information will appear here.</p>
+</div>
+<div class="section" id="pagesSection">
+  <h3>Pages</h3>
+  <div class="cards" id="pagesContent"></div>
+</div>
+    </div>
+  </div>
+
+  <div class="history-panel">
+    <h3>Version History</h3>
+    <button onclick="clearVersionHistory()">Clear Old History</button>
+    <div id="historyList"></div>
+  </div>
+
+  <script>
+let siteData = {
+  theme: {
+  background: "#0f172a",
+  text: "#ffffff",
+  primary: "#3b82f6",
+  secondary: "#1e293b",
+  accent: "#facc15",
+  heroBackground: "#1d4ed8",
+  navBackground: "#ffffff",
+  navText: "#111111"
+},
+  layout: {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
+  heroTitle: "Business Website",
+  heroSubtitle: "A strong modern website built from your prompt.",
+  services: [],
+  features: [],
+  about: "",
+  contact: "",
+  logoUrl: "",
+  heroImageUrl: "",
+
+  pages: [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ]
+};
+let currentPage = "home";
+let currentProjectId = null;
+let generatedLogoOptions = [];
+
+async function suggestLogos() {
+  const promptInput = document.getElementById("logoPromptInput");
+  const grid = document.getElementById("logoOptionsGrid");
+  const statusText = document.getElementById("statusText");
+
+  console.log("Prompt element:", promptInput);
+
+  if (!promptInput) {
+    statusText.textContent = "Logo prompt input not found.";
+    return;
+  }
+
+  const prompt = promptInput.value.trim();
+
+  if (!prompt) {
+    statusText.textContent = "Describe the logo style you want first.";
+    return;
+  }
+
+  statusText.textContent = "Generating logo options...";
+  grid.innerHTML = "<p>Generating logos...</p>";
+
+  try {
+    console.log("Sending request to /api/generate-logo...");
+
+    const response = await fetch("/api/generate-logo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    body: JSON.stringify({
+  prompt,
+  siteData
+})
+    });
+
+    console.log("Response received:", response);
+
+    const data = await response.json();
+
+    console.log("Parsed data:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Logo generation failed.");
+    }
+
+    generatedLogoOptions = data.logos || [];
+
+    if (generatedLogoOptions.length === 0) {
+      throw new Error("No logos were returned.");
+    }
+
+    grid.innerHTML = generatedLogoOptions
+      .map(
+        (logo, index) => `
+          <div class="logo-option">
+            <img src="${logo.url}" alt="${logo.name}" />
+            <p>${logo.name}</p>
+            <button onclick="applySuggestedLogo(${index})">
+              Apply Logo
+            </button>
+          </div>
+        `
+      )
+      .join("");
+
+    statusText.textContent = "Logo options generated.";
+  } catch (error) {
+    console.error("Logo generation error:", error);
+    statusText.textContent = "Logo generation failed: " + error.message;
+    grid.innerHTML = `<p style="color:#fca5a5;">${error.message}</p>`;
+  }
+}
+function applySuggestedLogo(index) {
+  const selectedLogo = generatedLogoOptions[index];
+
+  if (!selectedLogo) {
+    document.getElementById("statusText").textContent = "No logo selected.";
+    return;
+  }
+
+  saveVersionBeforeChange();
+
+  siteData.logoUrl = selectedLogo.url;
+
+  const logoInput = document.getElementById("logoUrlInput");
+  if (logoInput) logoInput.value = selectedLogo.url;
+
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent = "Logo applied.";
+}
+    let currentEditSection = "all";
+    const SITE_DATA_KEY = "siteData";
+    const SITE_HISTORY_KEY = "siteHistory";
+    const MAX_HISTORY = 5;
+
+   function cleanSiteDataForStorage(data) {
+  const safeCopy = JSON.parse(JSON.stringify(data));
+
+  if (safeCopy.heroImageUrl && safeCopy.heroImageUrl.startsWith("data:image")) {
+    safeCopy.heroImageUrl = "";
+  }
+
+  if (safeCopy.logoUrl && safeCopy.logoUrl.startsWith("data:image")) {
+    safeCopy.logoUrl = "";
+  }
+
+  return safeCopy;
+}
+
+function saveCurrentSite() {
+  const safeSiteData = cleanSiteDataForStorage(siteData);
+  localStorage.setItem(SITE_DATA_KEY, JSON.stringify(safeSiteData));
+}
+
+    function loadSavedSite() {
+      const saved = localStorage.getItem(SITE_DATA_KEY);
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+       siteData = {
+  theme: parsed.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+layout: parsed.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
+  heroTitle: parsed.heroTitle || "Business Website",
+          heroSubtitle: parsed.heroSubtitle || "A strong modern website built from your prompt.",
+          services: parsed.services || [],
+          features: parsed.features || [],
+          about: parsed.about || "",
+          contact: parsed.contact || parsed.contactText || "",
+          logoUrl: parsed.logoUrl || "",
+      heroImageUrl: parsed.heroImageUrl || "",
+
+pages: parsed.pages || [
+  {
+    slug: "home",
+    title: "Home",
+    fileName: "index.html"
+  }
+]
+        };
+
+        renderSite(siteData);
+      }
+    }
+
+   function saveVersionBeforeChange() {
+  try {
+    const history =
+      JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+
+    const safeCopy = cleanSiteDataForStorage(siteData);
+
+    if (
+      safeCopy.heroImageUrl &&
+      safeCopy.heroImageUrl.startsWith("data:image")
+    ) {
+      safeCopy.heroImageUrl = "";
+    }
+
+    if (
+      safeCopy.logoUrl &&
+      safeCopy.logoUrl.startsWith("data:image")
+    ) {
+      safeCopy.logoUrl = "";
+    }
+
+    history.unshift({
+      timestamp: new Date().toISOString(),
+      data: safeCopy
+    });
+
+    if (history.length > MAX_HISTORY) {
+      history.length = MAX_HISTORY;
+    }
+
+    localStorage.setItem(
+      SITE_HISTORY_KEY,
+      JSON.stringify(history)
+    );
+  } catch (error) {
+    console.warn(
+      "Could not save version history:",
+      error
+    );
+
+    localStorage.removeItem(SITE_HISTORY_KEY);
+  }
+}
+    function getVersionHistory() {
+      return JSON.parse(localStorage.getItem(SITE_HISTORY_KEY)) || [];
+    }
+
+    function clearVersionHistory() {
+      localStorage.removeItem(SITE_HISTORY_KEY);
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      const historyList = document.getElementById("historyList");
+      const history = getVersionHistory();
+
+      if (!historyList) return;
+
+      if (history.length === 0) {
+        historyList.innerHTML = "<p>No saved versions yet.</p>";
+        return;
+      }
+
+      historyList.innerHTML = history
+        .map((version, index) => {
+          const date = new Date(version.timestamp).toLocaleString();
+
+          return `
+            <div class="history-item">
+              <span>${date}</span>
+              <button onclick="restoreVersion(${index})">Restore</button>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function restoreVersion(index) {
+      const history = getVersionHistory();
+
+      if (!history[index]) return;
+
+      saveVersionBeforeChange();
+
+      const restored = history[index].data || {};
+
+   siteData = {
+  theme: restored.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+layout: restored.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
+  heroTitle: restored.heroTitle || "Business Website",
+  heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
+  services: restored.services || [],
+  features: restored.features || [],
+  about: restored.about || "",
+  contact: restored.contact || "",
+  logoUrl: restored.logoUrl || "",
+  heroImageUrl: restored.heroImageUrl || "",
+
+  pages: restored.pages || [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ]
+};
+
+      saveCurrentSite();
+      renderSite(siteData);
+      renderHistoryList();
+    }
+   function addPage() {
+  saveVersionBeforeChange();
+
+  if (!siteData.pages) {
+    siteData.pages = [
+      {
+        slug: "home",
+        title: "Home",
+        fileName: "index.html",
+        content: "Welcome to the home page."
+      }
+    ];
+  }
+
+  const pageTitle = prompt("What should this page be called?");
+
+  if (!pageTitle || !pageTitle.trim()) return;
+
+  const slug = pageTitle
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const exists = siteData.pages.some(p => p.slug === slug);
+  if (exists) {
+    alert("Page already exists.");
+    return;
+  }
+
+  siteData.pages.push({
+    slug: slug,
+    title: pageTitle,
+    fileName: slug + ".html",
+    components: []
+  });
+
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent =
+    pageTitle + " page added.";
+}
+function renderPreviewNavbar(data) {
+  const navLinks = document.getElementById("previewNavLinks");
+
+  if (!navLinks) return;
+
+  const pages = data.pages || [
+    {
+      slug: "home",
+      title: "Home",
+      fileName: "index.html"
+    }
+  ];
+
+  navLinks.innerHTML = pages
+    .map(page => {
+      if (page.slug === "home") {
+       return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
+      }
+
+      return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
+    })
+    .join("");
+
+  if (!pages.some(page => page.slug === "services")) {
+    navLinks.innerHTML += `<a href="#services">Services</a>`;
+  }
+
+  if (!pages.some(page => page.slug === "about")) {
+    navLinks.innerHTML += `<a href="#about">About</a>`;
+  }
+
+  if (!pages.some(page => page.slug === "contact")) {
+    navLinks.innerHTML += `<a href="#contact">Contact</a>`;
+  }
+}
+function renderPagesContent(data) {
+  const pagesContent = document.getElementById("pagesContent");
+
+  if (!pagesContent) return;
+
+  const pages = data.pages || [];
+  const current = pages.find(p => p.slug === currentPage);
+
+  if (!current || currentPage === "home") {
+    pagesContent.innerHTML = "";
+    return;
+  }
+
+  const componentsHtml = (current.components || []).map(c => {
+    if (c.type === "text") {
+      return `<p>${c.value}</p>`;
+    }
+
+    if (c.type === "pricing") {
+      return `
+        <div class="cards">
+          ${(c.tiers || []).map(t => `
+            <div class="card">
+              <h4>${t.name}</h4>
+              <p style="font-size:28px;font-weight:bold;">$${t.price}</p>
+              <p>${t.description || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+  if (c.type === "button") {
+  return `
+    <a href="${c.link || "#"}"
+       style="
+         display:inline-block;
+         background:#3b82f6;
+         color:white;
+         padding:14px 24px;
+         border-radius:10px;
+         text-decoration:none;
+         font-weight:bold;
+         margin-top:16px;
+       ">
+      ${c.text || "Click Here"}
+    </a>
+  `;
+}
+
+if (c.type === "testimonial") {
+  return `
+    <div class="cards">
+      ${(c.reviews || []).map(r => `
+        <div class="card">
+          <p style="font-size:20px;color:#facc15;margin-bottom:10px;">
+            ${"★".repeat(r.rating || 5)}
+          </p>
+
+          <p>"${r.quote || ""}"</p>
+
+          <h4 style="margin-top:14px;">
+            ${r.name || "Customer"}
+          </h4>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+if (c.type === "faq") {
+  return `
+    <div>
+      ${(c.items || []).map(item => `
+        <div class="card" style="margin-bottom:14px;">
+          <h4>${item.question || ""}</h4>
+          <p>${item.answer || ""}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+return "";
+  }).join("");
+
+  pagesContent.innerHTML = `
+    <div class="card">
+      <h4>${current.title}</h4>
+      ${componentsHtml || "<p>Add content for this page.</p>"}
+    </div>
+  `;
+}
+
+function switchPage(slug) {
+  currentPage = slug;
+  renderSite(siteData);
+
+  const label = document.getElementById("editingLabel");
+  const page = siteData.pages.find(p => p.slug === slug);
+
+  if (label) {
+    if (page) {
+      label.textContent = "Editing: " + page.title;
+    } else {
+      label.textContent =
+        "Editing: " + slug.charAt(0).toUpperCase() + slug.slice(1);
+    }
+  }
+}
+function renderSite(data) {
+  renderPreviewNavbar(data);
+  renderPagesContent(data);
+  const theme = data.theme || {};
+const layout = data.layout || {};
+document.body.style.background =
+  theme.background || "#0f172a";
+
+document.body.style.color =
+  theme.text || "#ffffff";
+
+const preview = document.querySelector(".preview");
+
+if (preview) {
+  preview.style.background =
+    theme.background || "#111827";
+}
+
+const navbar = document.querySelector(".site-navbar");
+
+if (navbar) {
+  navbar.style.background =
+    theme.navBackground || "#ffffff";
+
+  navbar.style.color =
+    theme.navText || "#111111";
+}
+
+document.querySelectorAll(".nav-links a").forEach(link => {
+  link.style.color =
+    theme.navText || "#111111";
+});
+
+const hero = document.querySelector(".hero");
+
+if (hero) {
+  hero.style.background = `
+    linear-gradient(
+      135deg,
+      ${theme.heroBackground || "#1d4ed8"},
+      ${theme.background || "#0f172a"}
+    )
+  `;
+}
+
+document.querySelectorAll(".card").forEach(card => {
+  card.style.background =
+    theme.secondary || "#1e293b";
+
+  card.style.color =
+    theme.text || "#ffffff";
+});
+
+document.querySelectorAll("button").forEach(button => {
+  button.style.background =
+    theme.primary || "#3b82f6";
+});
+  const heroText = document.querySelector(".hero-text");
+
+if (heroText) {
+  heroText.style.textAlign =
+    layout.heroAlign || "left";
+}
+
+document.querySelectorAll(".section").forEach(section => {
+  section.style.textAlign =
+    layout.sectionAlign || "left";
+});
+
+const heroContainer = document.querySelector(".hero");
+
+if (heroContainer) {
+  heroContainer.style.flexDirection =
+    layout.heroImagePosition === "left"
+      ? "row-reverse"
+      : "row";
+}
+
+if (navbar) {
+  navbar.style.justifyContent =
+    layout.navAlign || "space-between";
+}
+      const previewBusinessName = document.getElementById("previewBusinessName");
+const previewLogo = document.getElementById("previewLogo");
+const siteLogo = document.getElementById("siteLogo");
+
+if (data.logoUrl) {
+  if (previewLogo) {
+    previewLogo.src = data.logoUrl;
+    previewLogo.style.display = "block";
+  }
+
+  if (siteLogo) {
+    siteLogo.src = data.logoUrl;
+    siteLogo.style.display = "block";
+  }
+} else {
+  if (previewLogo) previewLogo.style.display = "none";
+  if (siteLogo) siteLogo.style.display = "none";
+}
+
+if (previewBusinessName) {
+  previewBusinessName.textContent = data.heroTitle || "Business Website";
+}
+
+if (previewLogo) {
+  if (data.logoUrl) {
+    previewLogo.src = data.logoUrl;
+    previewLogo.style.display = "block";
+  } else {
+    previewLogo.style.display = "none";
+  }
+}
+      document.getElementById("heroTitle").textContent =
+        data.heroTitle || "Business Website";
+
+      document.getElementById("heroSubtitle").textContent =
+        data.heroSubtitle || "A strong modern website built from your prompt.";
+
+      makeCards(data.services || [], "servicesGrid");
+      makeCards(data.features || [], "featuresGrid");
+
+      const aboutText = document.getElementById("aboutText");
+  const isHome = currentPage === "home";
+
+document.querySelector(".hero").style.display = isHome ? "flex" : "none";
+document.getElementById("services").style.display = isHome ? "block" : "none";
+document.getElementById("about").style.display = isHome ? "block" : "none";
+document.getElementById("contact").style.display = isHome ? "block" : "none";
+  document.getElementById("features").style.display = isHome ? "block" : "none";
+      const contactText = document.getElementById("contactText");
+      const previewBox = document.getElementById("previewBox");
+
+      if (aboutText) {
+        aboutText.textContent = data.about || "Tell visitors about your business here.";
+      }
+
+      if (contactText) {
+        contactText.textContent = data.contact || "Add your phone, email, and contact details here.";
+      }
+
+      const logoEl = document.getElementById("siteLogo");
+      const heroImageEl = document.getElementById("heroImage");
+
+      if (logoEl) {
+        if (data.logoUrl) {
+          logoEl.src = data.logoUrl;
+          logoEl.style.display = "block";
+        } else {
+          logoEl.src = "";
+          logoEl.style.display = "none";
+        }
+      }
+
+      if (heroImageEl) {
+        if (data.heroImageUrl) {
+          heroImageEl.src = data.heroImageUrl;
+          heroImageEl.style.display = "block";
+        } else {
+          heroImageEl.src = "";
+          heroImageEl.style.display = "none";
+        }
+      }
+
+      const logoInput = document.getElementById("logoUrlInput");
+      const heroImageInput = document.getElementById("heroImageUrlInput");
+
+      if (logoInput) logoInput.value = data.logoUrl || "";
+      if (heroImageInput) heroImageInput.value = data.heroImageUrl || "";
+
+      if (previewBox) {
+        previewBox.style.display = "block";
+      }
+
+      document.getElementById("exportBtn").style.display = "inline-block";
+document.getElementById("launchBtn").style.display = "inline-block";
+    }
+
+    function makeCards(items, targetId) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = "";
+
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <h4>${item.title || ""}</h4>
+          <p>${item.description || ""}</p>
+        `;
+        target.appendChild(div);
+      });
+    }
+
+    async function generateSite() {
+      const prompt = document.getElementById("promptInput").value.trim();
+      const statusText = document.getElementById("statusText");
+      const previewBox = document.getElementById("previewBox");
+
+      if (!prompt) {
+        statusText.textContent = "Please enter a website idea first.";
+        return;
+      }
+
+      statusText.textContent = "Generating website preview...";
+      previewBox.style.display = "none";
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Something went wrong.");
+        }
+
+        saveVersionBeforeChange();
+
+    siteData = {
+  theme: data.theme || {
+    background: "#0f172a",
+    text: "#ffffff",
+    primary: "#3b82f6",
+    secondary: "#1e293b",
+    accent: "#facc15",
+    heroBackground: "#1d4ed8",
+    navBackground: "#ffffff",
+    navText: "#111111"
+  },
+layout: data.layout || {
+  heroAlign: "left",
+  sectionAlign: "left",
+  heroImagePosition: "right",
+  navAlign: "space-between"
+},
+  heroTitle: data.heroTitle || "Business Website",
+  heroSubtitle: data.heroSubtitle || "A strong modern website built from your prompt.",
+  services: data.services || [],
+  features: data.features || [],
+  about: data.about || "",
+  contact: data.contact || "",
+  logoUrl: data.logoUrl || "",
+  heroImageUrl: data.heroImageUrl || "",
+
+pages: siteData.pages || [
+  {
+    slug: "home",
+    title: "Home",
+    fileName: "index.html"
+  }
+]
+        };
+
+        renderSite(siteData);
+        saveCurrentSite();
+        renderHistoryList();
+
+        previewBox.style.display = "block";
+        statusText.textContent = "Done.";
+      } catch (error) {
+        statusText.textContent = "Error: " + error.message;
+      }
+    }
+
+    async function modifySite() {
+      const editPrompt = document.getElementById("editPrompt").value.trim();
+      const statusText = document.getElementById("statusText");
+
+      if (!editPrompt) {
+        statusText.textContent = "Enter something to modify first.";
+        return;
+      }
+
+      if (!siteData) {
+        statusText.textContent = "No website data found yet.";
+        return;
+      }
+
+      statusText.textContent = "Updating website...";
+
+      try {
+        saveVersionBeforeChange();
+const safeSiteData = JSON.parse(JSON.stringify(siteData));
+
+if (
+  safeSiteData.heroImageUrl &&
+  safeSiteData.heroImageUrl.startsWith("data:image")
+) {
+  safeSiteData.heroImageUrl = "";
+}
+
+if (
+  safeSiteData.logoUrl &&
+  safeSiteData.logoUrl.startsWith("data:image")
+) {
+  safeSiteData.logoUrl = "";
+}
+        const response = await fetch("/api/modify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            prompt: editPrompt,
+            siteData: safeSiteData,
+           section: currentPage === "home" ? currentEditSection : currentPage
+          })
+        });
+
+        const rawText = await response.text();
+        let data = {};
+
+        try {
+          data = JSON.parse(rawText);
+        } catch {
+          throw new Error(rawText || "Update failed.");
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || "Update failed.");
+        }
+
+       if (currentPage === "home") {
+  siteData = {
+    ...siteData,
+    ...data
+  };
+} else {
+  const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
+
+if (pageIndex !== -1) {
+  if (Array.isArray(data.content)) {
+   siteData.pages[pageIndex].components = [
+  ...(siteData.pages[pageIndex].components || []),
+  ...data.content
+];
+  }
+}
+}
+
+renderSite(siteData);
+        saveCurrentSite();
+        renderHistoryList();
+
+        document.getElementById("exportBtn").style.display = "inline-block";
+        statusText.textContent = "Website updated.";
+        document.getElementById("editPrompt").value = "";
+      } catch (error) {
+        console.error(error);
+        statusText.textContent = "Update failed: " + error.message;
+      }
+    }
+
+     function applyImageChanges() {
+      saveVersionBeforeChange();
+
+      const logoUrl = document.getElementById("logoUrlInput").value.trim();
+      const heroImageUrl = document.getElementById("heroImageUrlInput").value.trim();
+
+      siteData.logoUrl = logoUrl;
+      siteData.heroImageUrl = heroImageUrl;
+
+      saveCurrentSite();
+      renderSite(siteData);
+      renderHistoryList();
+
+      document.getElementById("statusText").textContent = "Images updated.";
+    }
+async function generateHeroImage() {
+  const promptInput =
+    document.getElementById("heroImagePromptInput");
+
+  const resultBox =
+    document.getElementById("heroImageResult");
+
+  const statusText =
+    document.getElementById("statusText");
+
+  const prompt = promptInput.value.trim();
+
+  if (!prompt) {
+    statusText.textContent =
+      "Describe the hero image you want first.";
+    return;
+  }
+
+  statusText.textContent =
+    "Generating hero image...";
+
+  resultBox.innerHTML =
+    "<p>Generating image...</p>";
+
+  try {
+    const response = await fetch(
+      "/api/generate-image",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt,
+          siteData
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Image generation failed."
+      );
+    }
+
+    saveVersionBeforeChange();
+
+    siteData.heroImageUrl =
+      data.imageUrl;
+
+    const heroInput =
+      document.getElementById(
+        "heroImageUrlInput"
+      );
+
+    if (heroInput) {
+      heroInput.value = data.imageUrl;
+    }
+
+    saveCurrentSite();
+    renderSite(siteData);
+    renderHistoryList();
+
+    resultBox.innerHTML = `
+      <img
+        src="${data.imageUrl}"
+        style="
+          width:100%;
+          max-width:420px;
+          border-radius:14px;
+          margin-top:10px;
+        "
+      />
+    `;
+
+    statusText.textContent =
+      "Hero image generated and applied.";
+
+  } catch (error) {
+    console.error(error);
+
+    statusText.textContent =
+      "Image generation failed: " +
+      error.message;
+
+    resultBox.innerHTML = `
+      <p style="color:#fca5a5;">
+        ${error.message}
+      </p>
+    `;
+  }
+}
+    function setEditSection(section) {
+      currentEditSection = section;
+      console.log("Editing section:", section);
+
+      const buttons = document.querySelectorAll("#editSectionButtons button");
+
+      buttons.forEach(button => {
+        button.style.background = "#3b82f6";
+        button.style.boxShadow = "none";
+        button.style.transform = "scale(1)";
+      });
+
+      const activeButton = document.getElementById(`btn-${section}`);
+      if (activeButton) {
+        activeButton.style.background = "#0f3aa9";
+        activeButton.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.35)";
+        activeButton.style.transform = "scale(0.98)";
+      }
+    }
+
+    function setEditSection(section) {
+      currentEditSection = section;
+      console.log("Editing section:", section);
+
+      const buttons = document.querySelectorAll("#editSectionButtons button");
+
+      buttons.forEach(button => {
+        button.style.background = "#3b82f6";
+        button.style.boxShadow = "none";
+        button.style.transform = "scale(1)";
+      });
+
+      const activeButton = document.getElementById(`btn-${section}`);
+      if (activeButton) {
+        activeButton.style.background = "#0f3aa9";
+        activeButton.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.35)";
+        activeButton.style.transform = "scale(0.98)";
+      }
+    }
+
+    setEditSection("all");
+    loadSavedSite();
+    renderHistoryList();
+
+function downloadFile(filename, content, type = "text/plain") {
+  const blob = new Blob([content], { type });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  window.URL.revokeObjectURL(url);
+}
+
+
+async function launchWebsite() {
+  if (!siteData) {
+    alert("Generate a website first.");
+    return;
+  }
+
+  const statusText = document.getElementById("statusText");
+  statusText.textContent = "Publishing website...";
+
+  try {
+    const safeSiteData = cleanSiteDataForStorage(siteData);
+
+    const response = await fetch("/api/publish-site", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: safeSiteData.heroTitle || "Untitled Website",
+        siteData: safeSiteData
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Publish failed.");
+    }
+
+    window.open("/site.html?id=" + data.id, "_blank");
+
+    statusText.textContent =
+      "Website published. Share this link: " + data.url;
+  } catch (error) {
+    console.error("Launch failed:", error);
+    statusText.textContent = "Launch failed: " + error.message;
+  }
+}
+   async function saveProject() {
+  if (!siteData) {
+    alert("Generate a website first.");
+    return;
+  }
+
+  try {
+    const cleanedData =
+      cleanSiteDataForStorage(siteData);
+
+    const endpoint = currentProjectId
+      ? "/api/update-site"
+      : "/api/save-site";
+
+    const bodyData = {
+      userId: "demo-user",
+      title:
+        cleanedData.heroTitle ||
+        "Untitled Website",
+      siteData: cleanedData
+    };
+
+    if (currentProjectId) {
+      bodyData.id = currentProjectId;
+    }
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(bodyData)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Save failed"
+      );
+    }
+
+    if (data.website && data.website.id) {
+      currentProjectId = data.website.id;
+    }
+
+    document.getElementById("statusText").textContent =
+      currentProjectId
+        ? "Project updated in Supabase!"
+        : "Project saved to Supabase!";
+
+  } catch (error) {
+    console.error("Save project error:", error);
+
+    document.getElementById("statusText").textContent =
+      "Save failed: " + error.message;
+  }
+}
+    async function loadProjects() {
+  try {
+    const response = await fetch("/api/load-sites?userId=demo-user");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    const projectsList = document.getElementById("projectsList");
+
+    if (!data.websites || data.websites.length === 0) {
+      projectsList.innerHTML = "<p>No saved projects yet.</p>";
+      return;
+    }
+
+    window.loadedProjects = data.websites;
+
+   projectsList.innerHTML = data.websites.map((site, index) => {
+  const updatedDate = site.updated_at
+    ? new Date(site.updated_at).toLocaleString()
+    : "Unknown";
+
+  const createdDate = site.created_at
+    ? new Date(site.created_at).toLocaleString()
+    : "Unknown";
+
+  return `
+    <div class="card" style="margin-bottom:12px;">
+      <h4>${site.title || "Untitled Website"}</h4>
+      <p style="color:#cbd5e1; margin:6px 0;">
+        Last saved: ${updatedDate}
+      </p>
+      <p style="color:#94a3b8; margin:6px 0;">
+        Created: ${createdDate}
+      </p>
+      <button onclick="openProject(${index})">Open Project</button>
+    </div>
+  `;
+}).join("");
+
+    document.getElementById("statusText").textContent =
+      "Projects loaded.";
+  } catch (error) {
+    document.getElementById("statusText").textContent =
+      "Load failed: " + error.message;
+  }
+}
+
+function openProject(index) {
+  const project = window.loadedProjects[index];
+
+  if (!project) {
+    alert("Project not found.");
+    return;
+  }
+
+  saveVersionBeforeChange();
+
+  siteData = project.site_data;
+currentProjectId = project.id;
+  saveCurrentSite();
+  renderSite(siteData);
+  renderHistoryList();
+
+  document.getElementById("statusText").textContent =
+    "Project opened.";
+}
+function exportWebsite() {
+  const heroTitle = siteData.heroTitle || "Business Website";
+  const heroSubtitle = siteData.heroSubtitle || "";
+  const logoUrl = siteData.logoUrl || "";
+  const heroImageUrl = siteData.heroImageUrl || "";
+
+  const services = (siteData.services || []).map(item => `
+    <div class="card">
+      <h4>${item.title || ""}</h4>
+      <p>${item.description || ""}</p>
+    </div>
+  `).join("");
+
+  const features = (siteData.features || []).map(item => `
+        <div class="card">
+          <h4>${item.title || ""}</h4>
+          <p>${item.description || ""}</p>
+        </div>
+      `).join("");
+
+      const about = siteData.about || "";
+      const contact = siteData.contact || "";
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${heroTitle}</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  ${logoUrl ? `
+  <header class="site-header">
+    <img class="site-logo" src="${logoUrl}" alt="Logo" />
+  </header>
+  ` : ""}
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>${heroTitle}</h1>
+      <p>${heroSubtitle}</p>
+    </div>
+
+    ${heroImageUrl ? `
+    <img class="hero-image" src="${heroImageUrl}" alt="Hero image" />
+    ` : ""}
+  </section>
+
+  <section class="section">
+    <h2>Services</h2>
+    <div class="cards">${services}</div>
+  </section>
+
+  <section class="section">
+    <h2>Why Choose Us</h2>
+    <div class="cards">${features}</div>
+  </section>
+
+  <section class="section">
+    <h2>About</h2>
+    <p>${about}</p>
+  </section>
+
+  <section class="section">
+    <h2>Contact</h2>
+    <p>${contact}</p>
+  </section>
+
+  <footer>
+    Exported from AI Website Builder
+  </footer>
+</body>
+</html>`;
+
+      const css = `body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+  color: #111;
+}
+
+.site-header {
+  max-width: 1000px;
+  margin: auto;
+  padding: 24px 20px 0;
+  display: flex;
+  align-items: center;
+}
+
+.site-logo {
+  max-height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+
+.hero {
+  background: #111;
+  color: white;
+  padding: 80px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.hero-text {
+  max-width: 560px;
+}
+
+.hero h1 {
+  font-size: 44px;
+  margin: 0 0 14px;
+}
+
+.hero p {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.hero-image {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.section {
+  padding: 60px 20px;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+footer {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 30px;
+}`;
+
+      downloadFile("index.html", html, "text/html");
+
+      setTimeout(() => {
+        downloadFile("style.css", css, "text/css");
+      }, 200);
+    }
+  </script>
+</body>
+</html>

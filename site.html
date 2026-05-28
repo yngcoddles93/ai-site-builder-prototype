@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Launched Website</title>
+
+<style>
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: #f8fafc;
+color: #111827;
+}
+
+/* NAVBAR */
+
+.site-navbar {
+width: 100%;
+padding: 18px 8%;
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: white;
+box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+position: sticky;
+top: 0;
+z-index: 50;
+}
+
+.nav-brand {
+display: flex;
+align-items: center;
+gap: 12px;
+font-weight: 800;
+font-size: 20px;
+}
+
+.nav-brand img {
+width: 42px;
+height: 42px;
+object-fit: contain;
+border-radius: 8px;
+}
+
+.nav-links {
+display: flex;
+gap: 24px;
+}
+
+.nav-links a {
+color: #111;
+text-decoration: none;
+font-weight: 600;
+}
+
+.nav-links a:hover {
+opacity: 0.7;
+}
+
+/* HERO */
+
+.hero {
+padding: 90px 8%;
+text-align: center;
+background: linear-gradient(135deg,#eef2ff,#f8fafc);
+}
+
+.hero img {
+max-width: 100%;
+max-height: 420px;
+object-fit: cover;
+border-radius: 22px;
+margin-top: 32px;
+box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+
+h1 {
+font-size: clamp(42px,6vw,72px);
+margin: 0 0 18px;
+line-height: 1.05;
+}
+
+.hero p {
+font-size: 22px;
+max-width: 760px;
+margin: 0 auto;
+color: inherit;
+}
+
+/* SECTIONS */
+
+section {
+padding: 70px 8%;
+max-width: 1200px;
+margin: auto;
+}
+
+h2 {
+font-size: 34px;
+margin-bottom: 28px;
+text-align: center;
+}
+
+.cards {
+display: grid;
+grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+gap: 22px;
+}
+
+.card {
+background: white;
+padding: 26px;
+border-radius: 18px;
+box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+font-size: 18px;
+line-height: 1.5;
+}
+
+.text-block {
+background: white;
+padding: 32px;
+border-radius: 18px;
+box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+font-size: 19px;
+line-height: 1.7;
+color: #374151;
+}
+
+footer {
+text-align: center;
+padding: 35px;
+background: #111827;
+color: white;
+margin-top: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loadStatus" style="padding:40px;font-size:18px;">Loading website...</div>
+
+<nav class="site-navbar" style="display:none;">
+<div class="nav-brand">
+<img id="launchedLogo" style="display:none;">
+<span id="launchedBusinessName">Website</span>
+</div>
+
+<div class="nav-links" id="launchedNavLinks"></div>
+</nav>
+
+<main style="display:none;">
+
+<section class="hero" id="home">
+<h1 id="heroTitle">Website Title</h1>
+<p id="heroSubtitle">Website subtitle will appear here.</p>
+<img id="heroImage" style="display:none;">
+</section>
+
+<section id="services">
+<h2>Services</h2>
+<div class="cards" id="servicesGrid"></div>
+</section>
+
+<section>
+<h2>Why Choose Us</h2>
+<div class="cards" id="featuresGrid"></div>
+</section>
+
+<section id="about">
+<h2>About</h2>
+<div class="text-block" id="aboutText"></div>
+</section>
+
+<section id="contact">
+<h2>Contact</h2>
+<div class="text-block" id="contactText"></div>
+</section>
+<section id="customPageSection" style="display:none;">
+<h2 id="customPageTitle"></h2>
+<div id="customPageContent"></div>
+</section>
+</main>
+
+<footer style="display:none;">
+<p id="footerText">Built with AI Website Builder</p>
+</footer>
+
+<script>
+
+function getSiteId() {
+const params = new URLSearchParams(window.location.search);
+return params.get("id");
+}
+
+function createCards(items, containerId) {
+const container = document.getElementById(containerId);
+container.innerHTML = "";
+
+if (!Array.isArray(items)) return;
+
+items.forEach(item => {
+const card = document.createElement("div");
+card.className = "card";
+
+if (typeof item === "string") {
+card.textContent = item;
+} else {
+card.innerHTML = `
+<strong>${item.title || ""}</strong>
+<p>${item.description || ""}</p>
+`;
+}
+
+container.appendChild(card);
+});
+}
+let launchedSiteData = null;
+
+function renderLaunchedNavbar(data) {
+  const navLinks = document.getElementById("launchedNavLinks");
+  if (!navLinks) return;
+
+  const pages = data.pages || [
+    { slug: "home", title: "Home" }
+  ];
+
+  navLinks.innerHTML = pages.map(page => `
+    <a href="#" onclick="showLaunchedPage('${page.slug}')">${page.title}</a>
+  `).join("");
+
+  navLinks.innerHTML += `
+    <a href="#" onclick="showLaunchedPage('services')">Services</a>
+    <a href="#" onclick="showLaunchedPage('about')">About</a>
+    <a href="#" onclick="showLaunchedPage('contact')">Contact</a>
+  `;
+}
+
+function renderLaunchedComponents(components) {
+  return (components || []).map(c => {
+    if (c.type === "text") {
+      return `<div class="text-block">${c.value || ""}</div>`;
+    }
+
+    if (c.type === "pricing") {
+      return `
+        <div class="cards">
+          ${(c.tiers || []).map(t => `
+            <div class="card">
+              <h3>${t.name || ""}</h3>
+              <p style="font-size:30px;font-weight:bold;">$${t.price || ""}</p>
+              <p>${t.description || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (c.type === "button") {
+      return `
+        <a href="${c.link || "#"}"
+           style="display:inline-block;background:#3b82f6;color:white;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:18px;">
+          ${c.text || "Click Here"}
+        </a>
+      `;
+    }
+
+    if (c.type === "testimonial") {
+      return `
+        <div class="cards">
+          ${(c.reviews || []).map(r => `
+            <div class="card">
+              <p>${"★".repeat(r.rating || 5)}</p>
+              <p>"${r.quote || ""}"</p>
+              <strong>${r.name || "Customer"}</strong>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (c.type === "faq") {
+      return `
+        <div>
+          ${(c.items || []).map(item => `
+            <div class="card" style="margin-bottom:14px;">
+              <h3>${item.question || ""}</h3>
+              <p>${item.answer || ""}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    return "";
+  }).join("");
+}
+
+function showLaunchedPage(slug) {
+  if (!launchedSiteData) return;
+
+  const home = document.getElementById("home");
+  const services = document.getElementById("services");
+  const about = document.getElementById("about");
+  const contact = document.getElementById("contact");
+  const custom = document.getElementById("customPageSection");
+
+  home.style.display = slug === "home" ? "block" : "none";
+  services.style.display = slug === "home" || slug === "services" ? "block" : "none";
+  about.style.display = slug === "home" || slug === "about" ? "block" : "none";
+  contact.style.display = slug === "home" || slug === "contact" ? "block" : "none";
+
+  custom.style.display = "none";
+
+  const page = (launchedSiteData.pages || []).find(p => p.slug === slug);
+
+  if (page && slug !== "home") {
+    home.style.display = "none";
+    services.style.display = "none";
+    about.style.display = "none";
+    contact.style.display = "none";
+
+    document.getElementById("customPageTitle").textContent = page.title || "";
+    document.getElementById("customPageContent").innerHTML =
+      renderLaunchedComponents(page.components || []);
+
+    custom.style.display = "block";
+  }
+}
+function renderLaunchedSite(data) {
+  launchedSiteData = data;
+renderLaunchedNavbar(data);
+const theme = data.theme || {};
+const layout = data.layout || {};
+
+document.body.style.background = theme.background || "#f8fafc";
+document.body.style.color = theme.text || "#111827";
+
+const navbar = document.querySelector(".site-navbar");
+if (navbar) {
+  navbar.style.background = theme.navBackground || "white";
+  navbar.style.color = theme.navText || "#111111";
+  navbar.style.justifyContent = layout.navAlign || "space-between";
+}
+
+document.querySelectorAll(".nav-links a").forEach(link => {
+  link.style.color = theme.navText || "#111111";
+});
+
+const hero = document.querySelector(".hero");
+if (hero) {
+  hero.style.background = `
+    linear-gradient(
+      135deg,
+      ${theme.heroBackground || "#eef2ff"},
+      ${theme.background || "#f8fafc"}
+    )
+  `;
+  hero.style.textAlign = layout.heroAlign || "center";
+}
+
+document.querySelectorAll("section").forEach(section => {
+  section.style.textAlign = layout.sectionAlign || "left";
+});
+
+document.querySelectorAll(".card, .text-block").forEach(box => {
+  box.style.background = theme.secondary || "white";
+  box.style.color = theme.text || "#111827";
+});
+
+const footer = document.querySelector("footer");
+if (footer) {
+  footer.style.background = theme.secondary || "#111827";
+  footer.style.color = theme.text || "white";
+}
+document.getElementById("heroTitle").textContent =
+data.heroTitle || "Website Title";
+
+document.getElementById("heroSubtitle").textContent =
+data.heroSubtitle || "";
+
+document.getElementById("launchedBusinessName").textContent =
+data.heroTitle || "Website";
+
+document.getElementById("aboutText").textContent =
+data.about || "";
+
+document.getElementById("contactText").textContent =
+data.contact || data.contactText || "";
+
+createCards(data.services || [], "servicesGrid");
+createCards(data.features || [], "featuresGrid");
+
+if (data.logoUrl) {
+const logo = document.getElementById("launchedLogo");
+logo.src = data.logoUrl;
+logo.style.display = "block";
+}
+
+if (data.heroImageUrl) {
+const heroImage = document.getElementById("heroImage");
+heroImage.src = data.heroImageUrl;
+heroImage.style.display = "block";
+}
+
+document.title = data.heroTitle || "Launched Website";
+
+document.getElementById("footerText").textContent =
+data.heroTitle || "Built with AI Website Builder";
+}
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isLocalTestId(siteId) {
+  return siteId.startsWith("site-");
+}
+
+function loadFromLocalStorage(siteId) {
+  const savedSite = localStorage.getItem(siteId);
+
+  if (!savedSite) {
+    return null;
+  }
+
+  return JSON.parse(savedSite);
+}
+
+function showLoadError(message) {
+  document.getElementById("loadStatus").textContent = message;
+}
+
+function revealLaunchedPage() {
+  document.getElementById("loadStatus").style.display = "none";
+  document.querySelector(".site-navbar").style.display = "";
+  document.querySelector("main").style.display = "";
+  document.querySelector("footer").style.display = "";
+}
+
+async function loadLaunchedSite() {
+  const siteId = getSiteId();
+  const loadStatus = document.getElementById("loadStatus");
+
+  if (!siteId) {
+    showLoadError("No site ID found.");
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const forceLocalTest = params.get("test") === "local";
+
+  if (forceLocalTest || isLocalTestId(siteId)) {
+    try {
+      const data = loadFromLocalStorage(siteId);
+
+      if (!data) {
+        showLoadError("Site not found in localStorage (test mode).");
+        return;
+      }
+
+      renderLaunchedSite(data);
+      revealLaunchedPage();
+    } catch (error) {
+      console.error("Local test load failed:", error);
+      showLoadError("Could not load site from localStorage.");
+    }
+    return;
+  }
+
+  if (!UUID_REGEX.test(siteId)) {
+    showLoadError("Invalid site ID.");
+    return;
+  }
+
+  loadStatus.textContent = "Loading website...";
+
+  try {
+    const response = await fetch(
+      `/api/get-published-site?id=${encodeURIComponent(siteId)}`
+    );
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload.error || "Site not found.");
+    }
+
+    renderLaunchedSite(payload.siteData);
+    revealLaunchedPage();
+  } catch (error) {
+    console.error("Published site load failed:", error);
+    showLoadError(error.message || "Site not found.");
+  }
+}
+
+loadLaunchedSite();
+
+</script>
+
+</body>
+</html>
