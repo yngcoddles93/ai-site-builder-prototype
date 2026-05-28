@@ -1469,10 +1469,17 @@ async function launchWebsite() {
       throw new Error(data.error || "Publish failed.");
     }
 
-    window.open("/site.html?id=" + data.id, "_blank");
+    const shareUrl =
+      window.location.origin + "/site.html?id=" + data.id;
 
-    statusText.textContent =
-      "Website published. Share this link: " + data.url;
+    window.open(shareUrl, "_blank");
+
+    statusText.innerHTML =
+      'Website published. Share this link: <a href="' +
+      shareUrl +
+      '" target="_blank" rel="noopener">' +
+      shareUrl +
+      "</a>";
   } catch (error) {
     console.error("Launch failed:", error);
     statusText.textContent = "Launch failed: " + error.message;
