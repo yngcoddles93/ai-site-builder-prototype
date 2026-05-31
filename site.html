@@ -152,31 +152,8 @@ margin-top: 40px;
 
 <main style="display:none;">
 
-<section class="hero" id="home">
-<h1 id="heroTitle">Website Title</h1>
-<p id="heroSubtitle">Website subtitle will appear here.</p>
-<img id="heroImage" style="display:none;">
-</section>
+<div id="homeSectionsRoot"></div>
 
-<section id="services">
-<h2>Services</h2>
-<div class="cards" id="servicesGrid"></div>
-</section>
-
-<section>
-<h2>Why Choose Us</h2>
-<div class="cards" id="featuresGrid"></div>
-</section>
-
-<section id="about">
-<h2>About</h2>
-<div class="text-block" id="aboutText"></div>
-</section>
-
-<section id="contact">
-<h2>Contact</h2>
-<div class="text-block" id="contactText"></div>
-</section>
 <section id="customPageSection" style="display:none;">
 <h2 id="customPageTitle"></h2>
 <div id="customPageContent"></div>
@@ -187,6 +164,7 @@ margin-top: 40px;
 <p id="footerText">Built with AI Website Builder</p>
 </footer>
 
+<script src="/lib/site-schema.js"></script>
 <script>
 
 function getSiteId() {
@@ -194,28 +172,6 @@ const params = new URLSearchParams(window.location.search);
 return params.get("id");
 }
 
-function createCards(items, containerId) {
-const container = document.getElementById(containerId);
-container.innerHTML = "";
-
-if (!Array.isArray(items)) return;
-
-items.forEach(item => {
-const card = document.createElement("div");
-card.className = "card";
-
-if (typeof item === "string") {
-card.textContent = item;
-} else {
-card.innerHTML = `
-<strong>${item.title || ""}</strong>
-<p>${item.description || ""}</p>
-`;
-}
-
-container.appendChild(card);
-});
-}
 let launchedSiteData = null;
 
 function renderLaunchedNavbar(data) {
@@ -227,14 +183,17 @@ function renderLaunchedNavbar(data) {
   ];
 
   navLinks.innerHTML = pages.map(page => `
-    <a href="#" onclick="showLaunchedPage('${page.slug}')">${page.title}</a>
+    <a href="#" onclick="showLaunchedPage('${page.slug}'); return false;">${page.title}</a>
   `).join("");
 
-  navLinks.innerHTML += `
-    <a href="#" onclick="showLaunchedPage('services')">Services</a>
-    <a href="#" onclick="showLaunchedPage('about')">About</a>
-    <a href="#" onclick="showLaunchedPage('contact')">Contact</a>
-  `;
+  SiteSchema.getHomeSectionNavLinks(data).forEach((section) => {
+    if (!pages.some((page) => page.slug === section.id)) {
+      const label = section.title || section.id;
+      navLinks.innerHTML += `
+        <a href="#" onclick="showLaunchedPage('${section.id}'); return false;">${label}</a>
+      `;
+    }
+  });
 }
 
 function renderLaunchedComponents(components) {
@@ -300,39 +259,43 @@ function renderLaunchedComponents(components) {
 function showLaunchedPage(slug) {
   if (!launchedSiteData) return;
 
-  const home = document.getElementById("home");
-  const services = document.getElementById("services");
-  const about = document.getElementById("about");
-  const contact = document.getElementById("contact");
+  const homeRoot = document.getElementById("homeSectionsRoot");
   const custom = document.getElementById("customPageSection");
-
-  home.style.display = slug === "home" ? "block" : "none";
-  services.style.display = slug === "home" || slug === "services" ? "block" : "none";
-  about.style.display = slug === "home" || slug === "about" ? "block" : "none";
-  contact.style.display = slug === "home" || slug === "contact" ? "block" : "none";
+  const page = (launchedSiteData.pages || []).find(p => p.slug === slug);
 
   custom.style.display = "none";
 
-  const page = (launchedSiteData.pages || []).find(p => p.slug === slug);
-
   if (page && slug !== "home") {
-    home.style.display = "none";
-    services.style.display = "none";
-    about.style.display = "none";
-    contact.style.display = "none";
-
+    homeRoot.style.display = "none";
     document.getElementById("customPageTitle").textContent = page.title || "";
     document.getElementById("customPageContent").innerHTML =
       renderLaunchedComponents(page.components || []);
-
     custom.style.display = "block";
+    return;
   }
+
+  homeRoot.style.display = "block";
+
+  homeRoot.querySelectorAll("[data-section-id]").forEach((sectionEl) => {
+    const sectionId = sectionEl.dataset.sectionId;
+    const sectionType = sectionEl.dataset.sectionType;
+    const shouldShow = slug === "home" || sectionId === slug;
+    const displayMode = sectionType === "hero" ? "block" : "block";
+
+    sectionEl.style.display = shouldShow ? displayMode : "none";
+  });
 }
-function renderLaunchedSite(data) {
-  launchedSiteData = data;
-renderLaunchedNavbar(data);
-const theme = data.theme || {};
-const layout = data.layout || {};
+
+function renderLaunchedSite(rawData) {
+  launchedSiteData = SiteSchema.normalizeSiteData(rawData);
+  const data = launchedSiteData;
+  const homeRoot = document.getElementById("homeSectionsRoot");
+
+  renderLaunchedNavbar(data);
+  SiteSchema.renderHomeSections(homeRoot, data, { mode: "launched" });
+
+  const theme = data.theme || {};
+  const layout = data.layout || {};
 
 document.body.style.background = theme.background || "#f8fafc";
 document.body.style.color = theme.text || "#111827";
@@ -348,7 +311,7 @@ document.querySelectorAll(".nav-links a").forEach(link => {
   link.style.color = theme.navText || "#111111";
 });
 
-const hero = document.querySelector(".hero");
+const hero = homeRoot ? homeRoot.querySelector(".hero") : null;
 if (hero) {
   hero.style.background = `
     linear-gradient(
@@ -360,7 +323,7 @@ if (hero) {
   hero.style.textAlign = layout.heroAlign || "center";
 }
 
-document.querySelectorAll("section").forEach(section => {
+document.querySelectorAll("#homeSectionsRoot section, #homeSectionsRoot .section, #customPageSection section").forEach(section => {
   section.style.textAlign = layout.sectionAlign || "left";
 });
 
@@ -374,23 +337,14 @@ if (footer) {
   footer.style.background = theme.secondary || "#111827";
   footer.style.color = theme.text || "white";
 }
-document.getElementById("heroTitle").textContent =
-data.heroTitle || "Website Title";
 
-document.getElementById("heroSubtitle").textContent =
-data.heroSubtitle || "";
+document.title = data.heroTitle || "Launched Website";
+
+document.getElementById("footerText").textContent =
+data.heroTitle || "Built with AI Website Builder";
 
 document.getElementById("launchedBusinessName").textContent =
 data.heroTitle || "Website";
-
-document.getElementById("aboutText").textContent =
-data.about || "";
-
-document.getElementById("contactText").textContent =
-data.contact || data.contactText || "";
-
-createCards(data.services || [], "servicesGrid");
-createCards(data.features || [], "featuresGrid");
 
 if (data.logoUrl) {
 const logo = document.getElementById("launchedLogo");
@@ -398,16 +352,7 @@ logo.src = data.logoUrl;
 logo.style.display = "block";
 }
 
-if (data.heroImageUrl) {
-const heroImage = document.getElementById("heroImage");
-heroImage.src = data.heroImageUrl;
-heroImage.style.display = "block";
-}
-
-document.title = data.heroTitle || "Launched Website";
-
-document.getElementById("footerText").textContent =
-data.heroTitle || "Built with AI Website Builder";
+showLaunchedPage("home");
 }
 
 const UUID_REGEX =
@@ -438,6 +383,23 @@ function revealLaunchedPage() {
   document.querySelector("footer").style.display = "";
 }
 
+function parseLaunchedApiError(rawText, fallbackMessage) {
+  if (!rawText) {
+    return fallbackMessage;
+  }
+
+  try {
+    const parsed = JSON.parse(rawText);
+    return parsed.error || fallbackMessage;
+  } catch {
+    if (/NOT_FOUND|FUNCTION_INVOCATION_FAILED/i.test(rawText)) {
+      return "Could not load the published site API.";
+    }
+
+    return rawText.length > 180 ? fallbackMessage : rawText;
+  }
+}
+
 async function loadLaunchedSite() {
   const siteId = getSiteId();
   const loadStatus = document.getElementById("loadStatus");
@@ -459,7 +421,7 @@ async function loadLaunchedSite() {
         return;
       }
 
-      renderLaunchedSite(data);
+      renderLaunchedSite(SiteSchema.normalizeSiteData(data));
       revealLaunchedPage();
     } catch (error) {
       console.error("Local test load failed:", error);
@@ -480,10 +442,21 @@ async function loadLaunchedSite() {
       `/api/get-published-site?id=${encodeURIComponent(siteId)}`
     );
 
-    const payload = await response.json();
+    const rawText = await response.text();
+    let payload = {};
+
+    try {
+      payload = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      throw new Error(
+        parseLaunchedApiError(rawText, "Site not found.")
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(payload.error || "Site not found.");
+      throw new Error(
+        parseLaunchedApiError(rawText, payload.error || "Site not found.")
+      );
     }
 
     renderLaunchedSite(payload.siteData);

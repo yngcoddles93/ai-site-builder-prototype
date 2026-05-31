@@ -1,9 +1,36 @@
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function getSupabaseConfigError() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    return "Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY to your environment.";
+  }
+
+  return null;
+}
+
+async function parseJsonResponse(response) {
+  const rawText = await response.text();
+
+  if (!rawText) {
+    return { rawText, data: null };
+  }
+
+  try {
+    return { rawText, data: JSON.parse(rawText) };
+  } catch {
+    return { rawText, data: null };
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const supabaseConfigError = getSupabaseConfigError();
+  if (supabaseConfigError) {
+    return res.status(500).json({ error: supabaseConfigError });
   }
 
   try {
@@ -28,12 +55,17 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const { rawText, data } = await parseJsonResponse(response);
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: "Failed to load published site",
-        details: data
+        error:
+          data?.message ||
+          data?.hint ||
+          data?.error ||
+          rawText ||
+          "Failed to load published site",
+        details: data || rawText
       });
     }
 
@@ -53,8 +85,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Get published site error:", error);
     return res.status(500).json({
-      error: "Server error loading published site",
-      details: error.message
+      error: error.message || "Server error loading published site"
     });
   }
 }

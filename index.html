@@ -296,9 +296,10 @@
 <button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
    <button onclick="saveProject()">Save Project</button>
 <button onclick="loadProjects()">Load Projects</button>
+<button onclick="newProject()">New Project</button>
 </div>
 
-<div id="projectsList" style="margin-top:15px;"></div>
+<div id="projectsList" style="margin-top:15px; display:none;"></div>
 
    <div class="image-controls">
   <h3>Image Studio</h3>
@@ -357,34 +358,8 @@
         <img id="siteLogo" class="site-logo" src="" alt="Logo" style="display:none;" />
       </div>
 
-      <div class="hero" id="home">
-        <div class="hero-text">
-          <h2 id="heroTitle">Your website title will appear here</h2>
-          <p id="heroSubtitle">Your AI-generated subtitle will appear here.</p>
-        </div>
+      <div id="homeSectionsRoot"></div>
 
-        <img id="heroImage" class="hero-image" src="" alt="Hero image" style="display:none;" />
-      </div>
-
-   <div class="section" id="services">
-  <h3>Services</h3>
-  <div class="cards" id="servicesGrid"></div>
-</div>
-
-<div class="section" id="features">
-  <h3>Why Choose Us</h3>
-  <div class="cards" id="featuresGrid"></div>
-</div>
-
-<div class="section" id="about">
-  <h3>About</h3>
-  <p id="aboutText">Your business description will appear here.</p>
-</div>
-
-<div class="section" id="contact">
-  <h3>Contact</h3>
-  <p id="contactText">Your contact information will appear here.</p>
-</div>
 <div class="section" id="pagesSection">
   <h3>Pages</h3>
   <div class="cards" id="pagesContent"></div>
@@ -398,8 +373,10 @@
     <div id="historyList"></div>
   </div>
 
+  <script src="/lib/site-schema.js"></script>
+  <script src="/lib/editor-actions.js"></script>
   <script>
-let siteData = {
+let siteData = SiteSchema.normalizeSiteData({
   theme: {
   background: "#0f172a",
   text: "#ffffff",
@@ -432,7 +409,7 @@ let siteData = {
       fileName: "index.html"
     }
   ]
-};
+});
 let currentPage = "home";
 let currentProjectId = null;
 let generatedLogoOptions = [];
@@ -473,14 +450,21 @@ async function suggestLogos() {
 })
     });
 
-    console.log("Response received:", response);
+    const rawText = await response.text();
+    let data = {};
 
-    const data = await response.json();
-
-    console.log("Parsed data:", data);
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      throw new Error(
+        parseApiErrorResponse(rawText, "Logo generation failed.")
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || "Logo generation failed.");
+      throw new Error(
+        parseApiErrorResponse(rawText, data.error || "Logo generation failed.")
+      );
     }
 
     generatedLogoOptions = data.logos || [];
@@ -550,9 +534,187 @@ function applySuggestedLogo(index) {
   return safeCopy;
 }
 
+function normalizeCurrentSiteData(data) {
+  return SiteSchema.normalizeSiteData(data);
+}
+
 function saveCurrentSite() {
+  siteData = normalizeCurrentSiteData(siteData);
   const safeSiteData = cleanSiteDataForStorage(siteData);
   localStorage.setItem(SITE_DATA_KEY, JSON.stringify(safeSiteData));
+}
+
+function applyNewProjectReset(options = {}) {
+  const hideList = options.hideList === true;
+  const statusMessage =
+    options.statusMessage || "New project started.";
+
+  siteData = SiteSchema.createDefaultSiteData();
+  currentProjectId = null;
+  currentPage = "home";
+  generatedLogoOptions = [];
+
+  localStorage.removeItem(SITE_DATA_KEY);
+  localStorage.removeItem(SITE_HISTORY_KEY);
+
+  const inputIds = [
+    "promptInput",
+    "editPrompt",
+    "logoPromptInput",
+    "heroImagePromptInput",
+    "logoUrlInput",
+    "heroImageUrlInput"
+  ];
+
+  inputIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  const logoOptionsGrid = document.getElementById("logoOptionsGrid");
+  if (logoOptionsGrid) logoOptionsGrid.innerHTML = "";
+
+  const heroImageResult = document.getElementById("heroImageResult");
+  if (heroImageResult) heroImageResult.innerHTML = "";
+
+  renderSite(siteData);
+
+  const previewBox = document.getElementById("previewBox");
+  if (previewBox) previewBox.style.display = "none";
+
+  const exportBtn = document.getElementById("exportBtn");
+  if (exportBtn) exportBtn.style.display = "none";
+
+  const launchBtn = document.getElementById("launchBtn");
+  if (launchBtn) launchBtn.style.display = "none";
+
+  const editingLabel = document.getElementById("editingLabel");
+  if (editingLabel) editingLabel.textContent = "Editing: Home";
+
+  setEditSection("all");
+  renderHistoryList();
+
+  if (hideList) {
+    hideProjectsList();
+  }
+
+  document.getElementById("statusText").textContent = statusMessage;
+}
+
+function newProject() {
+  if (
+    !confirm(
+      "Start a new project? Unsaved changes will be lost."
+    )
+  ) {
+    return;
+  }
+
+  applyNewProjectReset({ hideList: true });
+}
+
+function hideProjectsList() {
+  const projectsList = document.getElementById("projectsList");
+  if (!projectsList) return;
+  projectsList.innerHTML = "";
+  projectsList.style.display = "none";
+}
+
+function showProjectsList(contentHtml) {
+  const projectsList = document.getElementById("projectsList");
+  if (!projectsList) return;
+
+  projectsList.innerHTML =
+    '<div style="margin-bottom:10px;">' +
+    '<button type="button" onclick="hideProjectsList()">Hide Projects</button>' +
+    "</div>" +
+    contentHtml;
+  projectsList.style.display = "block";
+}
+
+function buildProjectCardHtml(site, index) {
+  const updatedDate = site.updated_at
+    ? new Date(site.updated_at).toLocaleString()
+    : "Unknown";
+
+  const createdDate = site.created_at
+    ? new Date(site.created_at).toLocaleString()
+    : "Unknown";
+
+  return `
+    <div class="card" style="margin-bottom:12px;">
+      <h4>${site.title || "Untitled Website"}</h4>
+      <p style="color:#cbd5e1; margin:6px 0;">
+        Last saved: ${updatedDate}
+      </p>
+      <p style="color:#94a3b8; margin:6px 0;">
+        Created: ${createdDate}
+      </p>
+      <button onclick="openProject(${index})">Open Project</button>
+      <button onclick="deleteProject('${site.id}')" style="margin-left:8px;">Delete</button>
+    </div>
+  `;
+}
+
+function renderLoadedProjectsList() {
+  if (!window.loadedProjects || window.loadedProjects.length === 0) {
+    showProjectsList("<p>No saved projects yet.</p>");
+    return;
+  }
+
+  showProjectsList(
+    window.loadedProjects
+      .map((site, index) => buildProjectCardHtml(site, index))
+      .join("")
+  );
+}
+
+async function deleteProject(projectId) {
+  if (!confirm("Delete this project? This cannot be undone.")) {
+    return;
+  }
+
+  const statusText = document.getElementById("statusText");
+  statusText.textContent = "Deleting project...";
+
+  try {
+    const response = await fetch("/api/delete-site", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: projectId,
+        userId: "demo-user"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Delete failed");
+    }
+
+    const wasOpen = currentProjectId === projectId;
+
+    window.loadedProjects = (window.loadedProjects || []).filter(
+      (project) => project.id !== projectId
+    );
+    renderLoadedProjectsList();
+
+    if (wasOpen) {
+      applyNewProjectReset({
+        hideList: false,
+        statusMessage:
+          "Deleted project was open. Started a new project."
+      });
+    } else {
+      statusText.textContent = "Project deleted.";
+    }
+  } catch (error) {
+    console.error("Delete project error:", error);
+    statusText.textContent = "Delete failed: " + error.message;
+  }
 }
 
     function loadSavedSite() {
@@ -560,42 +722,7 @@ function saveCurrentSite() {
 
       if (saved) {
         const parsed = JSON.parse(saved);
-
-       siteData = {
-  theme: parsed.theme || {
-    background: "#0f172a",
-    text: "#ffffff",
-    primary: "#3b82f6",
-    secondary: "#1e293b",
-    accent: "#facc15",
-    heroBackground: "#1d4ed8",
-    navBackground: "#ffffff",
-    navText: "#111111"
-  },
-layout: parsed.layout || {
-  heroAlign: "left",
-  sectionAlign: "left",
-  heroImagePosition: "right",
-  navAlign: "space-between"
-},
-  heroTitle: parsed.heroTitle || "Business Website",
-          heroSubtitle: parsed.heroSubtitle || "A strong modern website built from your prompt.",
-          services: parsed.services || [],
-          features: parsed.features || [],
-          about: parsed.about || "",
-          contact: parsed.contact || parsed.contactText || "",
-          logoUrl: parsed.logoUrl || "",
-      heroImageUrl: parsed.heroImageUrl || "",
-
-pages: parsed.pages || [
-  {
-    slug: "home",
-    title: "Home",
-    fileName: "index.html"
-  }
-]
-        };
-
+        siteData = normalizeCurrentSiteData(parsed);
         renderSite(siteData);
       }
     }
@@ -685,47 +812,35 @@ pages: parsed.pages || [
       saveVersionBeforeChange();
 
       const restored = history[index].data || {};
-
-   siteData = {
-  theme: restored.theme || {
-    background: "#0f172a",
-    text: "#ffffff",
-    primary: "#3b82f6",
-    secondary: "#1e293b",
-    accent: "#facc15",
-    heroBackground: "#1d4ed8",
-    navBackground: "#ffffff",
-    navText: "#111111"
-  },
-layout: restored.layout || {
-  heroAlign: "left",
-  sectionAlign: "left",
-  heroImagePosition: "right",
-  navAlign: "space-between"
-},
-  heroTitle: restored.heroTitle || "Business Website",
-  heroSubtitle: restored.heroSubtitle || "A strong modern website built from your prompt.",
-  services: restored.services || [],
-  features: restored.features || [],
-  about: restored.about || "",
-  contact: restored.contact || "",
-  logoUrl: restored.logoUrl || "",
-  heroImageUrl: restored.heroImageUrl || "",
-
-  pages: restored.pages || [
-    {
-      slug: "home",
-      title: "Home",
-      fileName: "index.html"
-    }
-  ]
-};
+      siteData = normalizeCurrentSiteData(restored);
 
       saveCurrentSite();
       renderSite(siteData);
       renderHistoryList();
     }
+function parseApiErrorResponse(rawText, fallbackMessage) {
+  if (!rawText) {
+    return fallbackMessage;
+  }
+
+  try {
+    const parsed = JSON.parse(rawText);
+    return parsed.error || fallbackMessage;
+  } catch {
+    if (/NOT_FOUND|The page could not be found/i.test(rawText)) {
+      return "API route not found. Run the app with Vercel or vercel dev so /api routes are available.";
+    }
+
+    return rawText.length > 180
+      ? fallbackMessage
+      : rawText;
+  }
+}
+
    function addPage() {
+  const statusText = document.getElementById("statusText");
+
+  try {
   saveVersionBeforeChange();
 
   if (!siteData.pages) {
@@ -749,6 +864,12 @@ layout: restored.layout || {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
+  const slugValidation = SiteSchema.validatePageSlug(slug, siteData);
+  if (!slugValidation.valid) {
+    alert(slugValidation.reason);
+    return;
+  }
+
   const exists = siteData.pages.some(p => p.slug === slug);
   if (exists) {
     alert("Page already exists.");
@@ -762,12 +883,16 @@ layout: restored.layout || {
     components: []
   });
 
+  siteData = normalizeCurrentSiteData(siteData);
   saveCurrentSite();
   renderSite(siteData);
   renderHistoryList();
 
-  document.getElementById("statusText").textContent =
-    pageTitle + " page added.";
+  statusText.textContent = pageTitle + " page added.";
+  } catch (error) {
+    console.error("Add page failed:", error);
+    statusText.textContent = "Add page failed: " + error.message;
+  }
 }
 function renderPreviewNavbar(data) {
   const navLinks = document.getElementById("previewNavLinks");
@@ -784,25 +909,36 @@ function renderPreviewNavbar(data) {
 
   navLinks.innerHTML = pages
     .map(page => {
-      if (page.slug === "home") {
-       return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
-      }
-
-      return `<a href="#" onclick="switchPage('${page.slug}')">${page.title}</a>`;
+      return `<a href="#" onclick="switchPage('${page.slug}'); return false;">${page.title}</a>`;
     })
     .join("");
 
-  if (!pages.some(page => page.slug === "services")) {
-    navLinks.innerHTML += `<a href="#services">Services</a>`;
+  SiteSchema.getHomeSectionNavLinks(data).forEach((section) => {
+    if (!pages.some((page) => page.slug === section.id)) {
+      const label = section.title || section.id;
+      navLinks.innerHTML += `<a href="#" onclick="goToHomeSection('${section.id}'); return false;">${label}</a>`;
+    }
+  });
+}
+function scrollToHomeSection(sectionId) {
+  const homeRoot = document.getElementById("homeSectionsRoot");
+  if (!homeRoot) return;
+
+  const sectionEl = homeRoot.querySelector(
+    `[data-section-id="${sectionId}"]`
+  );
+
+  if (sectionEl) {
+    sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function goToHomeSection(sectionId) {
+  if (currentPage !== "home") {
+    switchPage("home");
   }
 
-  if (!pages.some(page => page.slug === "about")) {
-    navLinks.innerHTML += `<a href="#about">About</a>`;
-  }
-
-  if (!pages.some(page => page.slug === "contact")) {
-    navLinks.innerHTML += `<a href="#contact">Contact</a>`;
-  }
+  scrollToHomeSection(sectionId);
 }
 function renderPagesContent(data) {
   const pagesContent = document.getElementById("pagesContent");
@@ -899,198 +1035,140 @@ return "";
 }
 
 function switchPage(slug) {
+  const page = SiteSchema.findPageBySlug(siteData, slug);
+
+  if (!page) {
+    document.getElementById("statusText").textContent =
+      "That page could not be found.";
+    return;
+  }
+
   currentPage = slug;
   renderSite(siteData);
 
   const label = document.getElementById("editingLabel");
-  const page = siteData.pages.find(p => p.slug === slug);
 
   if (label) {
-    if (page) {
-      label.textContent = "Editing: " + page.title;
-    } else {
-      label.textContent =
-        "Editing: " + slug.charAt(0).toUpperCase() + slug.slice(1);
-    }
+    label.textContent = "Editing: " + page.title;
   }
 }
 function renderSite(data) {
+  data = normalizeCurrentSiteData(data);
+  siteData = data;
+
   renderPreviewNavbar(data);
   renderPagesContent(data);
+
   const theme = data.theme || {};
-const layout = data.layout || {};
-document.body.style.background =
-  theme.background || "#0f172a";
-
-document.body.style.color =
-  theme.text || "#ffffff";
-
-const preview = document.querySelector(".preview");
-
-if (preview) {
-  preview.style.background =
-    theme.background || "#111827";
-}
-
-const navbar = document.querySelector(".site-navbar");
-
-if (navbar) {
-  navbar.style.background =
-    theme.navBackground || "#ffffff";
-
-  navbar.style.color =
-    theme.navText || "#111111";
-}
-
-document.querySelectorAll(".nav-links a").forEach(link => {
-  link.style.color =
-    theme.navText || "#111111";
-});
-
-const hero = document.querySelector(".hero");
-
-if (hero) {
-  hero.style.background = `
-    linear-gradient(
-      135deg,
-      ${theme.heroBackground || "#1d4ed8"},
-      ${theme.background || "#0f172a"}
-    )
-  `;
-}
-
-document.querySelectorAll(".card").forEach(card => {
-  card.style.background =
-    theme.secondary || "#1e293b";
-
-  card.style.color =
-    theme.text || "#ffffff";
-});
-
-document.querySelectorAll("button").forEach(button => {
-  button.style.background =
-    theme.primary || "#3b82f6";
-});
-  const heroText = document.querySelector(".hero-text");
-
-if (heroText) {
-  heroText.style.textAlign =
-    layout.heroAlign || "left";
-}
-
-document.querySelectorAll(".section").forEach(section => {
-  section.style.textAlign =
-    layout.sectionAlign || "left";
-});
-
-const heroContainer = document.querySelector(".hero");
-
-if (heroContainer) {
-  heroContainer.style.flexDirection =
-    layout.heroImagePosition === "left"
-      ? "row-reverse"
-      : "row";
-}
-
-if (navbar) {
-  navbar.style.justifyContent =
-    layout.navAlign || "space-between";
-}
-      const previewBusinessName = document.getElementById("previewBusinessName");
-const previewLogo = document.getElementById("previewLogo");
-const siteLogo = document.getElementById("siteLogo");
-
-if (data.logoUrl) {
-  if (previewLogo) {
-    previewLogo.src = data.logoUrl;
-    previewLogo.style.display = "block";
-  }
-
-  if (siteLogo) {
-    siteLogo.src = data.logoUrl;
-    siteLogo.style.display = "block";
-  }
-} else {
-  if (previewLogo) previewLogo.style.display = "none";
-  if (siteLogo) siteLogo.style.display = "none";
-}
-
-if (previewBusinessName) {
-  previewBusinessName.textContent = data.heroTitle || "Business Website";
-}
-
-if (previewLogo) {
-  if (data.logoUrl) {
-    previewLogo.src = data.logoUrl;
-    previewLogo.style.display = "block";
-  } else {
-    previewLogo.style.display = "none";
-  }
-}
-      document.getElementById("heroTitle").textContent =
-        data.heroTitle || "Business Website";
-
-      document.getElementById("heroSubtitle").textContent =
-        data.heroSubtitle || "A strong modern website built from your prompt.";
-
-      makeCards(data.services || [], "servicesGrid");
-      makeCards(data.features || [], "featuresGrid");
-
-      const aboutText = document.getElementById("aboutText");
+  const layout = data.layout || {};
   const isHome = currentPage === "home";
+  const homeRoot = document.getElementById("homeSectionsRoot");
+  const pagesSection = document.getElementById("pagesSection");
 
-document.querySelector(".hero").style.display = isHome ? "flex" : "none";
-document.getElementById("services").style.display = isHome ? "block" : "none";
-document.getElementById("about").style.display = isHome ? "block" : "none";
-document.getElementById("contact").style.display = isHome ? "block" : "none";
-  document.getElementById("features").style.display = isHome ? "block" : "none";
-      const contactText = document.getElementById("contactText");
-      const previewBox = document.getElementById("previewBox");
+  if (homeRoot) {
+    SiteSchema.renderHomeSections(homeRoot, data, { mode: "preview" });
+    homeRoot.style.display = isHome ? "block" : "none";
+  }
 
-      if (aboutText) {
-        aboutText.textContent = data.about || "Tell visitors about your business here.";
-      }
+  if (pagesSection) {
+    pagesSection.style.display = isHome ? "none" : "block";
+  }
 
-      if (contactText) {
-        contactText.textContent = data.contact || "Add your phone, email, and contact details here.";
-      }
+  document.body.style.background = theme.background || "#0f172a";
+  document.body.style.color = theme.text || "#ffffff";
 
-      const logoEl = document.getElementById("siteLogo");
-      const heroImageEl = document.getElementById("heroImage");
+  const preview = document.querySelector(".preview");
 
-      if (logoEl) {
-        if (data.logoUrl) {
-          logoEl.src = data.logoUrl;
-          logoEl.style.display = "block";
-        } else {
-          logoEl.src = "";
-          logoEl.style.display = "none";
-        }
-      }
+  if (preview) {
+    preview.style.background = theme.background || "#111827";
+  }
 
-      if (heroImageEl) {
-        if (data.heroImageUrl) {
-          heroImageEl.src = data.heroImageUrl;
-          heroImageEl.style.display = "block";
-        } else {
-          heroImageEl.src = "";
-          heroImageEl.style.display = "none";
-        }
-      }
+  const navbar = document.querySelector(".site-navbar");
 
-      const logoInput = document.getElementById("logoUrlInput");
-      const heroImageInput = document.getElementById("heroImageUrlInput");
+  if (navbar) {
+    navbar.style.background = theme.navBackground || "#ffffff";
+    navbar.style.color = theme.navText || "#111111";
+    navbar.style.justifyContent = layout.navAlign || "space-between";
+  }
 
-      if (logoInput) logoInput.value = data.logoUrl || "";
-      if (heroImageInput) heroImageInput.value = data.heroImageUrl || "";
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.style.color = theme.navText || "#111111";
+  });
 
-      if (previewBox) {
-        previewBox.style.display = "block";
-      }
+  const hero = homeRoot ? homeRoot.querySelector(".hero") : null;
 
-      document.getElementById("exportBtn").style.display = "inline-block";
-document.getElementById("launchBtn").style.display = "inline-block";
+  if (hero) {
+    hero.style.display = "flex";
+    hero.style.background = `
+      linear-gradient(
+        135deg,
+        ${theme.heroBackground || "#1d4ed8"},
+        ${theme.background || "#0f172a"}
+      )
+    `;
+    hero.style.flexDirection =
+      layout.heroImagePosition === "left" ? "row-reverse" : "row";
+  }
+
+  const heroText = homeRoot ? homeRoot.querySelector(".hero-text") : null;
+
+  if (heroText) {
+    heroText.style.textAlign = layout.heroAlign || "left";
+  }
+
+  document
+    .querySelectorAll("#homeSectionsRoot .section, #pagesSection .section")
+    .forEach((section) => {
+      section.style.textAlign = layout.sectionAlign || "left";
+    });
+
+  document.querySelectorAll(".card").forEach((card) => {
+    card.style.background = theme.secondary || "#1e293b";
+    card.style.color = theme.text || "#ffffff";
+  });
+
+  document.querySelectorAll("button").forEach((button) => {
+    button.style.background = theme.primary || "#3b82f6";
+  });
+
+  const previewBusinessName = document.getElementById("previewBusinessName");
+  const previewLogo = document.getElementById("previewLogo");
+  const siteLogo = document.getElementById("siteLogo");
+
+  if (data.logoUrl) {
+    if (previewLogo) {
+      previewLogo.src = data.logoUrl;
+      previewLogo.style.display = "block";
     }
+
+    if (siteLogo) {
+      siteLogo.src = data.logoUrl;
+      siteLogo.style.display = "block";
+    }
+  } else {
+    if (previewLogo) previewLogo.style.display = "none";
+    if (siteLogo) siteLogo.style.display = "none";
+  }
+
+  if (previewBusinessName) {
+    previewBusinessName.textContent = data.heroTitle || "Business Website";
+  }
+
+  const logoInput = document.getElementById("logoUrlInput");
+  const heroImageInput = document.getElementById("heroImageUrlInput");
+
+  if (logoInput) logoInput.value = data.logoUrl || "";
+  if (heroImageInput) heroImageInput.value = data.heroImageUrl || "";
+
+  const previewBox = document.getElementById("previewBox");
+
+  if (previewBox) {
+    previewBox.style.display = "block";
+  }
+
+  document.getElementById("exportBtn").style.display = "inline-block";
+  document.getElementById("launchBtn").style.display = "inline-block";
+}
 
     function makeCards(items, targetId) {
       const target = document.getElementById(targetId);
@@ -1119,6 +1197,7 @@ document.getElementById("launchBtn").style.display = "inline-block";
 
       statusText.textContent = "Generating website preview...";
       previewBox.style.display = "none";
+      hideProjectsList();
 
       try {
         const response = await fetch("/api/generate", {
@@ -1137,7 +1216,7 @@ document.getElementById("launchBtn").style.display = "inline-block";
 
         saveVersionBeforeChange();
 
-    siteData = {
+    siteData = normalizeCurrentSiteData({
   theme: data.theme || {
     background: "#0f172a",
     text: "#ffffff",
@@ -1170,7 +1249,7 @@ pages: siteData.pages || [
     fileName: "index.html"
   }
 ]
-        };
+        });
 
         renderSite(siteData);
         saveCurrentSite();
@@ -1195,6 +1274,15 @@ pages: siteData.pages || [
       if (!siteData) {
         statusText.textContent = "No website data found yet.";
         return;
+      }
+
+      if (currentPage !== "home") {
+        const activePage = SiteSchema.findPageBySlug(siteData, currentPage);
+        if (!activePage) {
+          statusText.textContent =
+            "The selected page could not be found. Switch back to Home and try again.";
+          return;
+        }
       }
 
       statusText.textContent = "Updating website...";
@@ -1234,18 +1322,22 @@ if (
         try {
           data = JSON.parse(rawText);
         } catch {
-          throw new Error(rawText || "Update failed.");
+          throw new Error(
+            parseApiErrorResponse(rawText, "Update failed.")
+          );
         }
 
         if (!response.ok) {
-          throw new Error(data.error || "Update failed.");
+          throw new Error(
+            parseApiErrorResponse(rawText, data.error || "Update failed.")
+          );
         }
 
        if (currentPage === "home") {
-  siteData = {
+  siteData = normalizeCurrentSiteData({
     ...siteData,
     ...data
-  };
+  });
 } else {
   const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
 
@@ -1257,6 +1349,7 @@ if (pageIndex !== -1) {
 ];
   }
 }
+  siteData = normalizeCurrentSiteData(siteData);
 }
 
 renderSite(siteData);
@@ -1450,7 +1543,9 @@ async function launchWebsite() {
   statusText.textContent = "Publishing website...";
 
   try {
-    const safeSiteData = cleanSiteDataForStorage(siteData);
+    const safeSiteData = cleanSiteDataForStorage(
+      normalizeCurrentSiteData(siteData)
+    );
 
     const response = await fetch("/api/publish-site", {
       method: "POST",
@@ -1463,10 +1558,25 @@ async function launchWebsite() {
       })
     });
 
-    const data = await response.json();
+    const rawText = await response.text();
+    let data = {};
+
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      throw new Error(
+        parseApiErrorResponse(rawText, "Publish failed.")
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(data.error || "Publish failed.");
+      throw new Error(
+        parseApiErrorResponse(rawText, data.error || "Publish failed.")
+      );
+    }
+
+    if (!data.id) {
+      throw new Error("Publish succeeded but no site id was returned.");
     }
 
     const shareUrl =
@@ -1552,37 +1662,13 @@ async function launchWebsite() {
       throw new Error(data.error || "Load failed");
     }
 
-    const projectsList = document.getElementById("projectsList");
-
     if (!data.websites || data.websites.length === 0) {
-      projectsList.innerHTML = "<p>No saved projects yet.</p>";
+      showProjectsList("<p>No saved projects yet.</p>");
       return;
     }
 
     window.loadedProjects = data.websites;
-
-   projectsList.innerHTML = data.websites.map((site, index) => {
-  const updatedDate = site.updated_at
-    ? new Date(site.updated_at).toLocaleString()
-    : "Unknown";
-
-  const createdDate = site.created_at
-    ? new Date(site.created_at).toLocaleString()
-    : "Unknown";
-
-  return `
-    <div class="card" style="margin-bottom:12px;">
-      <h4>${site.title || "Untitled Website"}</h4>
-      <p style="color:#cbd5e1; margin:6px 0;">
-        Last saved: ${updatedDate}
-      </p>
-      <p style="color:#94a3b8; margin:6px 0;">
-        Created: ${createdDate}
-      </p>
-      <button onclick="openProject(${index})">Open Project</button>
-    </div>
-  `;
-}).join("");
+    renderLoadedProjectsList();
 
     document.getElementById("statusText").textContent =
       "Projects loaded.";
@@ -1602,11 +1688,12 @@ function openProject(index) {
 
   saveVersionBeforeChange();
 
-  siteData = project.site_data;
+  siteData = normalizeCurrentSiteData(project.site_data);
 currentProjectId = project.id;
   saveCurrentSite();
   renderSite(siteData);
   renderHistoryList();
+  hideProjectsList();
 
   document.getElementById("statusText").textContent =
     "Project opened.";
