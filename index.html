@@ -4,7 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Site Builder Prototype</title>
+  <link rel="stylesheet" href="/lib/site-theme.css" />
   <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #0f172a;
@@ -93,100 +106,14 @@
 
     .preview {
       margin-top: 35px;
-      background: #111827;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid #1f2937;
-    }
-
-    .site-header {
-      padding: 20px 30px 0;
-      display: flex;
-      align-items: center;
-    }
-
-    .site-logo {
-      max-height: 60px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .hero {
-      padding: 55px 30px;
-      background: linear-gradient(135deg, #1d4ed8, #0f172a);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-
-    .hero-text {
-      flex: 1;
-      min-width: 260px;
-    }
-
-    .hero h2 {
-      font-size: 38px;
-      margin: 0 0 12px;
-    }
-
-    .hero p {
-      font-size: 18px;
-      color: #dbeafe;
-      margin: 0;
-      max-width: 700px;
-    }
-
-    .hero-image {
       width: 100%;
-      max-width: 420px;
-      border-radius: 12px;
-      object-fit: cover;
-      display: block;
+      max-width: 100%;
+      border-radius: 18px;
+      overflow-x: hidden;
+      overflow-y: visible;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
     }
 
-    .section {
-      padding: 30px;
-      border-top: 1px solid #1f2937;
-    }
-
-    .section h3 {
-      margin-top: 0;
-      font-size: 26px;
-      margin-bottom: 16px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 18px;
-      border-radius: 14px;
-    }
-
-    .card h4 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .card p {
-      margin: 0;
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-
-    .contact-box {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 14px;
-      color: #cbd5e1;
-      line-height: 1.7;
-    }
     .logo-suggestion-box {
   margin: 20px 0;
   background: #111827;
@@ -222,49 +149,6 @@
   margin-top: 10px;
   padding: 10px 14px;
   font-size: 14px;
-}
-    .site-navbar {
-  width: 100%;
-  padding: 18px 8%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  color: #111;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  font-size: 20px;
-}
-
-.nav-brand img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 24px;
-}
-
-.nav-links a {
-  color: #111;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.nav-links a:hover {
-  opacity: 0.7;
 }
     
   </style>
@@ -974,17 +858,7 @@ function renderPagesContent(data) {
 
   if (c.type === "button") {
   return `
-    <a href="${c.link || "#"}"
-       style="
-         display:inline-block;
-         background:#3b82f6;
-         color:white;
-         padding:14px 24px;
-         border-radius:10px;
-         text-decoration:none;
-         font-weight:bold;
-         margin-top:16px;
-       ">
+    <a href="${c.link || "#"}" class="theme-cta">
       ${c.text || "Click Here"}
     </a>
   `;
@@ -995,7 +869,7 @@ if (c.type === "testimonial") {
     <div class="cards">
       ${(c.reviews || []).map(r => `
         <div class="card">
-          <p style="font-size:20px;color:#facc15;margin-bottom:10px;">
+          <p class="theme-accent" style="font-size:20px;margin-bottom:10px;">
             ${"★".repeat(r.rating || 5)}
           </p>
 
@@ -1028,7 +902,7 @@ return "";
 
   pagesContent.innerHTML = `
     <div class="card">
-      <h4>${current.title}</h4>
+      <h4 class="section-heading">${current.title}</h4>
       ${componentsHtml || "<p>Add content for this page.</p>"}
     </div>
   `;
@@ -1059,8 +933,6 @@ function renderSite(data) {
   renderPreviewNavbar(data);
   renderPagesContent(data);
 
-  const theme = data.theme || {};
-  const layout = data.layout || {};
   const isHome = currentPage === "home";
   const homeRoot = document.getElementById("homeSectionsRoot");
   const pagesSection = document.getElementById("pagesSection");
@@ -1073,63 +945,6 @@ function renderSite(data) {
   if (pagesSection) {
     pagesSection.style.display = isHome ? "none" : "block";
   }
-
-  document.body.style.background = theme.background || "#0f172a";
-  document.body.style.color = theme.text || "#ffffff";
-
-  const preview = document.querySelector(".preview");
-
-  if (preview) {
-    preview.style.background = theme.background || "#111827";
-  }
-
-  const navbar = document.querySelector(".site-navbar");
-
-  if (navbar) {
-    navbar.style.background = theme.navBackground || "#ffffff";
-    navbar.style.color = theme.navText || "#111111";
-    navbar.style.justifyContent = layout.navAlign || "space-between";
-  }
-
-  document.querySelectorAll(".nav-links a").forEach((link) => {
-    link.style.color = theme.navText || "#111111";
-  });
-
-  const hero = homeRoot ? homeRoot.querySelector(".hero") : null;
-
-  if (hero) {
-    hero.style.display = "flex";
-    hero.style.background = `
-      linear-gradient(
-        135deg,
-        ${theme.heroBackground || "#1d4ed8"},
-        ${theme.background || "#0f172a"}
-      )
-    `;
-    hero.style.flexDirection =
-      layout.heroImagePosition === "left" ? "row-reverse" : "row";
-  }
-
-  const heroText = homeRoot ? homeRoot.querySelector(".hero-text") : null;
-
-  if (heroText) {
-    heroText.style.textAlign = layout.heroAlign || "left";
-  }
-
-  document
-    .querySelectorAll("#homeSectionsRoot .section, #pagesSection .section")
-    .forEach((section) => {
-      section.style.textAlign = layout.sectionAlign || "left";
-    });
-
-  document.querySelectorAll(".card").forEach((card) => {
-    card.style.background = theme.secondary || "#1e293b";
-    card.style.color = theme.text || "#ffffff";
-  });
-
-  document.querySelectorAll("button").forEach((button) => {
-    button.style.background = theme.primary || "#3b82f6";
-  });
 
   const previewBusinessName = document.getElementById("previewBusinessName");
   const previewLogo = document.getElementById("previewLogo");
@@ -1161,8 +976,8 @@ function renderSite(data) {
   if (heroImageInput) heroImageInput.value = data.heroImageUrl || "";
 
   const previewBox = document.getElementById("previewBox");
-
   if (previewBox) {
+    SiteSchema.applyThemeStyles(previewBox, data.theme, data.layout);
     previewBox.style.display = "block";
   }
 

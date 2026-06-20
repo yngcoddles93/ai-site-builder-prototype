@@ -4,135 +4,32 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Launched Website</title>
+<link rel="stylesheet" href="/lib/site-theme.css" />
 
 <style>
+html {
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: #f8fafc;
-color: #111827;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* NAVBAR */
-
-.site-navbar {
-width: 100%;
-padding: 18px 8%;
-display: flex;
-align-items: center;
-justify-content: space-between;
-background: white;
-box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-position: sticky;
-top: 0;
-z-index: 50;
-}
-
-.nav-brand {
-display: flex;
-align-items: center;
-gap: 12px;
-font-weight: 800;
-font-size: 20px;
-}
-
-.nav-brand img {
-width: 42px;
-height: 42px;
-object-fit: contain;
-border-radius: 8px;
-}
-
-.nav-links {
-display: flex;
-gap: 24px;
-}
-
-.nav-links a {
-color: #111;
-text-decoration: none;
-font-weight: 600;
-}
-
-.nav-links a:hover {
-opacity: 0.7;
-}
-
-/* HERO */
-
-.hero {
-padding: 90px 8%;
-text-align: center;
-background: linear-gradient(135deg,#eef2ff,#f8fafc);
-}
-
-.hero img {
-max-width: 100%;
-max-height: 420px;
-object-fit: cover;
-border-radius: 22px;
-margin-top: 32px;
-box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-}
-
-h1 {
-font-size: clamp(42px,6vw,72px);
-margin: 0 0 18px;
-line-height: 1.05;
-}
-
-.hero p {
-font-size: 22px;
-max-width: 760px;
-margin: 0 auto;
-color: inherit;
-}
-
-/* SECTIONS */
-
-section {
-padding: 70px 8%;
-max-width: 1200px;
-margin: auto;
-}
-
-h2 {
-font-size: 34px;
-margin-bottom: 28px;
-text-align: center;
-}
-
-.cards {
-display: grid;
-grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
-gap: 22px;
-}
-
-.card {
-background: white;
-padding: 26px;
-border-radius: 18px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-font-size: 18px;
-line-height: 1.5;
-}
-
-.text-block {
-background: white;
-padding: 32px;
-border-radius: 18px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-font-size: 19px;
-line-height: 1.7;
-color: #374151;
-}
-
-footer {
-text-align: center;
-padding: 35px;
-background: #111827;
-color: white;
-margin-top: 40px;
+#loadStatus {
+  padding: 40px;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
 }
 </style>
 </head>
@@ -155,7 +52,7 @@ margin-top: 40px;
 <div id="homeSectionsRoot"></div>
 
 <section id="customPageSection" style="display:none;">
-<h2 id="customPageTitle"></h2>
+<h2 id="customPageTitle" class="section-heading"></h2>
 <div id="customPageContent"></div>
 </section>
 </main>
@@ -218,8 +115,7 @@ function renderLaunchedComponents(components) {
 
     if (c.type === "button") {
       return `
-        <a href="${c.link || "#"}"
-           style="display:inline-block;background:#3b82f6;color:white;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:18px;">
+        <a href="${c.link || "#"}" class="theme-cta">
           ${c.text || "Click Here"}
         </a>
       `;
@@ -230,7 +126,7 @@ function renderLaunchedComponents(components) {
         <div class="cards">
           ${(c.reviews || []).map(r => `
             <div class="card">
-              <p>${"★".repeat(r.rating || 5)}</p>
+              <p class="theme-accent">${"★".repeat(r.rating || 5)}</p>
               <p>"${r.quote || ""}"</p>
               <strong>${r.name || "Customer"}</strong>
             </div>
@@ -294,51 +190,9 @@ function renderLaunchedSite(rawData) {
   renderLaunchedNavbar(data);
   SiteSchema.renderHomeSections(homeRoot, data, { mode: "launched" });
 
-  const theme = data.theme || {};
-  const layout = data.layout || {};
+  SiteSchema.applyThemeStyles(document.body, data.theme, data.layout);
 
-document.body.style.background = theme.background || "#f8fafc";
-document.body.style.color = theme.text || "#111827";
-
-const navbar = document.querySelector(".site-navbar");
-if (navbar) {
-  navbar.style.background = theme.navBackground || "white";
-  navbar.style.color = theme.navText || "#111111";
-  navbar.style.justifyContent = layout.navAlign || "space-between";
-}
-
-document.querySelectorAll(".nav-links a").forEach(link => {
-  link.style.color = theme.navText || "#111111";
-});
-
-const hero = homeRoot ? homeRoot.querySelector(".hero") : null;
-if (hero) {
-  hero.style.background = `
-    linear-gradient(
-      135deg,
-      ${theme.heroBackground || "#eef2ff"},
-      ${theme.background || "#f8fafc"}
-    )
-  `;
-  hero.style.textAlign = layout.heroAlign || "center";
-}
-
-document.querySelectorAll("#homeSectionsRoot section, #homeSectionsRoot .section, #customPageSection section").forEach(section => {
-  section.style.textAlign = layout.sectionAlign || "left";
-});
-
-document.querySelectorAll(".card, .text-block").forEach(box => {
-  box.style.background = theme.secondary || "white";
-  box.style.color = theme.text || "#111827";
-});
-
-const footer = document.querySelector("footer");
-if (footer) {
-  footer.style.background = theme.secondary || "#111827";
-  footer.style.color = theme.text || "white";
-}
-
-document.title = data.heroTitle || "Launched Website";
+  document.title = data.heroTitle || "Launched Website";
 
 document.getElementById("footerText").textContent =
 data.heroTitle || "Built with AI Website Builder";
