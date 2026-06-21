@@ -1644,6 +1644,11 @@ footer {
         clerkInstance = window.Clerk;
         if (!clerkInstance) throw new Error("Clerk SDK did not initialize");
 
+        // Auto-init via data attribute starts load() asynchronously. Await it
+        // explicitly so openSignIn() can mount the modal — calling it before
+        // load() resolves silently does nothing.
+        await clerkInstance.load();
+
         clerkInstance.addListener(updateAuthBar);
         updateAuthBar();
       } catch (err) {
