@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@clerk/backend": "^3.8.2",
     "@vercel/blob": "latest"
   }
 }
