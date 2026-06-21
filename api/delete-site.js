@@ -1,10 +1,19 @@
+import { requireAuth } from "../lib/api-auth.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  let userId;
   try {
-    const { id, userId } = req.body;
+    ({ userId } = await requireAuth(req));
+  } catch (err) {
+    return res.status(err.status || 401).json({ error: err.message });
+  }
+
+  try {
+    const { id } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "Missing project id" });
@@ -17,9 +26,9 @@ export default async function handler(req, res) {
       });
     }
 
-    const safeUserId = userId || "demo-user";
+    // Filter by both id and user_id — prevents a user from deleting another user's project.
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/websites?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(safeUserId)}`,
+      `${process.env.SUPABASE_URL}/rest/v1/websites?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`,
       {
         method: "DELETE",
         headers: {

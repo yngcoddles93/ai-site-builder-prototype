@@ -1,13 +1,20 @@
+import { requireAuth } from "../lib/api-auth.js";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  let userId;
   try {
-    const userId = req.query.userId || "demo-user";
+    ({ userId } = await requireAuth(req));
+  } catch (err) {
+    return res.status(err.status || 401).json({ error: err.message });
+  }
 
+  try {
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/websites?user_id=eq.${userId}&select=*&order=updated_at.desc`,
+      `${process.env.SUPABASE_URL}/rest/v1/websites?user_id=eq.${encodeURIComponent(userId)}&select=*&order=updated_at.desc`,
       {
         method: "GET",
         headers: {

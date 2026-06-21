@@ -1,3 +1,5 @@
+import { optionalAuth } from "../lib/api-auth.js";
+
 const MAX_SITE_DATA_BYTES = 500_000;
 
 const DEFAULT_HOME_SECTIONS = [
@@ -88,6 +90,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: supabaseConfigError });
   }
 
+  const { userId } = await optionalAuth(req);
+
   try {
     const { title, siteData } = req.body || {};
 
@@ -119,7 +123,8 @@ export default async function handler(req, res) {
             title ||
             cleanedSiteData.heroTitle ||
             "Untitled Website",
-          site_data: cleanedSiteData
+          site_data: cleanedSiteData,
+          ...(userId ? { user_id: userId } : {})
         })
       }
     );

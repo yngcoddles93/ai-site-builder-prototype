@@ -1,10 +1,19 @@
+import { requireAuth } from "../lib/api-auth.js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  let userId;
   try {
-    const { id, title, siteData, userId } = req.body;
+    ({ userId } = await requireAuth(req));
+  } catch (err) {
+    return res.status(err.status || 401).json({ error: err.message });
+  }
+
+  try {
+    const { id, title, siteData } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "Missing project id" });
@@ -14,8 +23,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing siteData" });
     }
 
+    // Filter by both id and user_id — Supabase will return 0 rows if the
+    // authenticated user does not own this project, which produces a 404 below.
     const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/websites?id=eq.${id}&user_id=eq.${userId || "demo-user"}`,
+      `${process.env.SUPABASE_URL}/rest/v1/websites?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`,
       {
         method: "PATCH",
         headers: {
@@ -38,6 +49,12 @@ export default async function handler(req, res) {
       return res.status(response.status).json({
         error: "Supabase update failed",
         details: data
+      });
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(404).json({
+        error: "Project not found or you do not have permission to update it."
       });
     }
 
