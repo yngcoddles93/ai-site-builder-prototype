@@ -1629,8 +1629,8 @@ footer {
           return;
         }
 
-        clerkInstance = new window.Clerk(config.clerkPublishableKey);
-        await clerkInstance.load();
+        await window.Clerk.load({ publishableKey: config.clerkPublishableKey });
+        clerkInstance = window.Clerk;
 
         clerkInstance.addListener(updateAuthBar);
         updateAuthBar();
