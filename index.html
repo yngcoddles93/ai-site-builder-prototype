@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Site Builder Prototype</title>
   <link rel="stylesheet" href="/lib/site-theme.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
   <style>
     *,
     *::before,
@@ -155,6 +156,23 @@
 </head>
 
 <body>
+  <div id="authBar" style="
+    background:#1e293b;
+    border-bottom:1px solid #334155;
+    padding:10px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:12px;
+    font-size:14px;
+    color:#cbd5e1;
+    min-height:44px;
+  ">
+    <span id="authUserEmail" style="display:none;"></span>
+    <button id="authSignInBtn" onclick="clerkSignIn()" style="display:none;padding:8px 18px;font-size:14px;margin-top:0;">Sign In</button>
+    <button id="authSignOutBtn" onclick="clerkSignOut()" style="display:none;padding:8px 18px;font-size:14px;margin-top:0;background:#475569;">Sign Out</button>
+  </div>
+
   <div class="container">
    <h1>TEST UPDATED VERSION</h1>
     <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
@@ -553,53 +571,6 @@ function renderLoadedProjectsList() {
   );
 }
 
-async function deleteProject(projectId) {
-  if (!confirm("Delete this project? This cannot be undone.")) {
-    return;
-  }
-
-  const statusText = document.getElementById("statusText");
-  statusText.textContent = "Deleting project...";
-
-  try {
-    const response = await fetch("/api/delete-site", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: projectId,
-        userId: "demo-user"
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Delete failed");
-    }
-
-    const wasOpen = currentProjectId === projectId;
-
-    window.loadedProjects = (window.loadedProjects || []).filter(
-      (project) => project.id !== projectId
-    );
-    renderLoadedProjectsList();
-
-    if (wasOpen) {
-      applyNewProjectReset({
-        hideList: false,
-        statusMessage:
-          "Deleted project was open. Started a new project."
-      });
-    } else {
-      statusText.textContent = "Project deleted.";
-    }
-  } catch (error) {
-    console.error("Delete project error:", error);
-    statusText.textContent = "Delete failed: " + error.message;
-  }
-}
 
     function loadSavedSite() {
       const saved = localStorage.getItem(SITE_DATA_KEY);
@@ -1410,88 +1381,6 @@ async function launchWebsite() {
     statusText.textContent = "Launch failed: " + error.message;
   }
 }
-   async function saveProject() {
-  if (!siteData) {
-    alert("Generate a website first.");
-    return;
-  }
-
-  try {
-    const cleanedData =
-      cleanSiteDataForStorage(siteData);
-
-    const endpoint = currentProjectId
-      ? "/api/update-site"
-      : "/api/save-site";
-
-    const bodyData = {
-      userId: "demo-user",
-      title:
-        cleanedData.heroTitle ||
-        "Untitled Website",
-      siteData: cleanedData
-    };
-
-    if (currentProjectId) {
-      bodyData.id = currentProjectId;
-    }
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(bodyData)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || "Save failed"
-      );
-    }
-
-    if (data.website && data.website.id) {
-      currentProjectId = data.website.id;
-    }
-
-    document.getElementById("statusText").textContent =
-      currentProjectId
-        ? "Project updated in Supabase!"
-        : "Project saved to Supabase!";
-
-  } catch (error) {
-    console.error("Save project error:", error);
-
-    document.getElementById("statusText").textContent =
-      "Save failed: " + error.message;
-  }
-}
-    async function loadProjects() {
-  try {
-    const response = await fetch("/api/load-sites?userId=demo-user");
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Load failed");
-    }
-
-    if (!data.websites || data.websites.length === 0) {
-      showProjectsList("<p>No saved projects yet.</p>");
-      return;
-    }
-
-    window.loadedProjects = data.websites;
-    renderLoadedProjectsList();
-
-    document.getElementById("statusText").textContent =
-      "Projects loaded.";
-  } catch (error) {
-    document.getElementById("statusText").textContent =
-      "Load failed: " + error.message;
-  }
-}
 
 function openProject(index) {
   const project = window.loadedProjects[index];
@@ -1673,6 +1562,196 @@ footer {
         downloadFile("style.css", css, "text/css");
       }, 200);
     }
+
+    // ── Clerk Authentication ──────────────────────────────────────────────────
+
+    let clerkInstance = null;
+
+    async function getSessionToken() {
+      if (!clerkInstance || !clerkInstance.session) return null;
+      return clerkInstance.session.getToken();
+    }
+
+    function authHeaders(extraHeaders = {}) {
+      // Returns a promise that resolves to the headers object.
+      // Use with: const headers = await authHeaders({ "Content-Type": "application/json" });
+      return getSessionToken().then(token => ({
+        ...extraHeaders,
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }));
+    }
+
+    function updateAuthBar() {
+      const signInBtn = document.getElementById("authSignInBtn");
+      const signOutBtn = document.getElementById("authSignOutBtn");
+      const userEmail = document.getElementById("authUserEmail");
+
+      if (!clerkInstance) return;
+
+      const user = clerkInstance.user;
+
+      if (user) {
+        const email = user.primaryEmailAddress?.emailAddress || "";
+        userEmail.textContent = email;
+        userEmail.style.display = email ? "inline" : "none";
+        signInBtn.style.display = "none";
+        signOutBtn.style.display = "inline-block";
+      } else {
+        userEmail.style.display = "none";
+        signInBtn.style.display = "inline-block";
+        signOutBtn.style.display = "none";
+      }
+    }
+
+    function clerkSignIn() {
+      if (clerkInstance) clerkInstance.openSignIn({});
+    }
+
+    function clerkSignOut() {
+      if (clerkInstance) clerkInstance.signOut().then(updateAuthBar);
+    }
+
+    async function initClerk() {
+      try {
+        const configRes = await fetch("/api/app-config");
+        const config = await configRes.json();
+
+        if (!config.clerkPublishableKey) {
+          // Clerk not configured — auth bar stays hidden, all features still work.
+          console.warn("Clerk publishable key not set. Authentication disabled.");
+          return;
+        }
+
+        clerkInstance = new window.Clerk(config.clerkPublishableKey);
+        await clerkInstance.load();
+
+        clerkInstance.addListener(updateAuthBar);
+        updateAuthBar();
+      } catch (err) {
+        console.warn("Clerk initialization failed:", err.message);
+      }
+    }
+
+    // ── Auth-aware wrappers for project CRUD ──────────────────────────────────
+
+    async function saveProject() {
+      if (!siteData) {
+        alert("Generate a website first.");
+        return;
+      }
+
+      const token = await getSessionToken();
+      if (!token) {
+        document.getElementById("statusText").textContent =
+          "Sign in to save your project.";
+        if (clerkInstance) clerkInstance.openSignIn({});
+        return;
+      }
+
+      try {
+        const cleanedData = cleanSiteDataForStorage(siteData);
+        const endpoint = currentProjectId ? "/api/update-site" : "/api/save-site";
+        const bodyData = {
+          title: cleanedData.heroTitle || "Untitled Website",
+          siteData: cleanedData
+        };
+        if (currentProjectId) bodyData.id = currentProjectId;
+
+        const headers = await authHeaders({ "Content-Type": "application/json" });
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(bodyData)
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Save failed");
+
+        if (data.website && data.website.id) currentProjectId = data.website.id;
+
+        document.getElementById("statusText").textContent =
+          currentProjectId ? "Project saved!" : "Project updated!";
+      } catch (error) {
+        console.error("Save project error:", error);
+        document.getElementById("statusText").textContent =
+          "Save failed: " + error.message;
+      }
+    }
+
+    async function loadProjects() {
+      const token = await getSessionToken();
+      if (!token) {
+        document.getElementById("statusText").textContent =
+          "Sign in to load your projects.";
+        if (clerkInstance) clerkInstance.openSignIn({});
+        return;
+      }
+
+      try {
+        const headers = await authHeaders();
+        const response = await fetch("/api/load-sites", { headers });
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || "Load failed");
+
+        if (!data.websites || data.websites.length === 0) {
+          showProjectsList("<p>No saved projects yet.</p>");
+          return;
+        }
+
+        window.loadedProjects = data.websites;
+        renderLoadedProjectsList();
+        document.getElementById("statusText").textContent = "Projects loaded.";
+      } catch (error) {
+        document.getElementById("statusText").textContent =
+          "Load failed: " + error.message;
+      }
+    }
+
+    async function deleteProject(projectId) {
+      if (!confirm("Delete this project? This cannot be undone.")) return;
+
+      const token = await getSessionToken();
+      if (!token) {
+        document.getElementById("statusText").textContent =
+          "Sign in to delete projects.";
+        return;
+      }
+
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Deleting project...";
+
+      try {
+        const headers = await authHeaders({ "Content-Type": "application/json" });
+        const response = await fetch("/api/delete-site", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ id: projectId })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Delete failed");
+
+        const wasOpen = currentProjectId === projectId;
+        window.loadedProjects = (window.loadedProjects || []).filter(
+          p => p.id !== projectId
+        );
+        renderLoadedProjectsList();
+
+        if (wasOpen) {
+          applyNewProjectReset({ hideList: false, statusMessage: "Deleted project was open. Started a new project." });
+        } else {
+          statusText.textContent = "Project deleted.";
+        }
+      } catch (error) {
+        console.error("Delete project error:", error);
+        document.getElementById("statusText").textContent =
+          "Delete failed: " + error.message;
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    initClerk();
   </script>
 </body>
 </html>
