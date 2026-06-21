@@ -161,11 +161,13 @@ These are known gaps that should not be built upon. Address them before the feat
 
 | Issue | Location | Risk | Notes |
 |---|---|---|---|
-| `userId` hardcoded as `"demo-user"` | `index.html`, all save/load/delete API calls | All users share one project list | Placeholder, not a design decision. Fix with auth (Layer 1). |
-| `EditorActions` not wired to AI path | `api/modify.js` | AI returns raw JSON patches; multi-step mutations are fragile | The library is built for this. Wiring it is Layer 1 work. |
-| HTML escaping missing in preview mode | `index.html` render path | XSS surface in the editor | `escapeHtml()` exists in `site-schema.js` and is used in `site.html` but not in the preview renderer in `index.html`. |
+| ~~`userId` hardcoded as `"demo-user"`~~ | ~~`index.html`, all save/load/delete API calls~~ | ~~All users share one project list~~ | **Fixed.** Clerk auth implemented in Layer 1. |
+| `EditorActions` not wired to AI path | `api/modify.js` | AI returns raw JSON patches; multi-step mutations are fragile | The library is built for this. Next phase. |
+| ~~HTML escaping missing in preview mode~~ | ~~`index.html` render path~~ | ~~XSS surface in the editor~~ | **Fixed.** `SiteSchema.escapeHtml()` now exported and applied to all preview render paths. |
 | Non-standard OpenAI endpoint | `api/generate.js`, `api/modify.js` | Endpoint stability unknown | Both use `gpt-5.4` via `/v1/responses`, which is non-standard. Verify this is a stable production endpoint before scaling. |
 | Normalization logic duplicated | `api/publish-site.js` vs `lib/site-schema.js` | The two copies can drift | `publish-site.js` re-implements normalization that already exists in `SiteSchema.normalizeSiteData()`. It should import the shared version. |
+| No rate limiting on open AI routes | `api/generate.js`, `api/modify.js`, `api/generate-image.js`, `api/generate-logo.js` | Unrestricted OpenAI quota consumption | True rate limiting requires shared state (Vercel KV). **Deliberately deferred until pre-beta hardening.** Implement with `@vercel/kv` and a fail-open fallback when the time comes. |
+| Supabase anon key used for write operations | All protected API routes | API layer is the only security gate; a leaked anon key + direct REST access bypasses it | Add `SUPABASE_SERVICE_ROLE_KEY` and switch protected routes to use it. Update RLS to deny anon writes. Low urgency while the codebase is not public. |
 
 ---
 
@@ -180,7 +182,7 @@ Follow these standards for all new code in this project.
 
 ### Rendering
 - Every new component type or section type must support both render modes: `"preview"` (in `index.html`) and `"launched"` (in `site.html`). The `mode` parameter in `renderHomeSectionMarkup()` controls this.
-- All user-generated content injected into innerHTML must be passed through `escapeHtml()` in both modes. This is currently missing in preview mode and must be corrected as new rendering code is written.
+- All user-generated content injected into innerHTML must be passed through `SiteSchema.escapeHtml()`. Both preview and launched modes are now covered. Any new component type or render path must follow the same pattern.
 
 ### Data model changes
 - Any change to the siteData shape must bump `SCHEMA_VERSION` in `lib/site-schema.js`.
