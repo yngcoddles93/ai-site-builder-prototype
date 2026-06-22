@@ -1129,10 +1129,12 @@ if (
           const result = EditorActions.applyActions(siteData, data.actions);
           siteData = result.siteData;
 
-          // If the active custom page was deleted, switch back to home so
-          // the user isn't left on a page that no longer exists.
+          // If the active custom page was deleted (deletePage or deleteContent
+          // that actually removed something), switch back to home.
           const deletedCurrentPage = result.applied.find(
-            (a) => a.type === "deletePage" && a.slug === currentPage
+            (a) =>
+              (a.type === "deletePage" || (a.type === "deleteContent" && !a._nothingFound)) &&
+              a.slug === currentPage
           );
           if (deletedCurrentPage) {
             currentPage = "home";
@@ -1143,6 +1145,13 @@ if (
             }
           }
 
+          // deleteContent sets _nothingFound when neither the page nor the
+          // section existed — surface a friendly message instead of "Website
+          // updated." or a scary "(N changes could not be applied)" warning.
+          const nothingFound =
+            result.applied.length > 0 &&
+            result.applied.every((a) => a._nothingFound);
+
           if (result.skipped.length > 0) {
             console.warn("EditorActions skipped:", result.skipped);
           }
@@ -1152,6 +1161,8 @@ if (
             : "";
           statusText.textContent = deletedCurrentPage
             ? "Page deleted."
+            : nothingFound
+            ? "Nothing found to delete."
             : `Website updated.${skipMsg}`;
 
         } else if (isHomePage) {

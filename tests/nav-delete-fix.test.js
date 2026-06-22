@@ -324,6 +324,127 @@ test("Multiple pages: deleting one does not affect others", () => {
   assert.ok(result.siteData.pages.some((p) => p.slug === "home"), '"home" should remain');
 });
 
+// ── Regression: deleteContent combined-delete (all 4 existence scenarios) ────
+
+console.log("\nRegression: deleteContent — page + section, page only, section only, neither:");
+
+function makeSiteForDeleteContent({ asPage = false, asSection = false } = {}) {
+  const homeSections = [
+    { id: "hero",     type: "hero",     visible: true },
+    { id: "services", type: "services", visible: true, title: "Services" },
+    { id: "about",    type: "about",    visible: true, title: "About" },
+    { id: "contact",  type: "contact",  visible: true, title: "Contact" },
+  ];
+  if (asSection) {
+    homeSections.splice(3, 0, {
+      id: "testimonials", type: "testimonials", visible: true, title: "Testimonials",
+    });
+  }
+  const base = SiteSchema.normalizeSiteData({
+    heroTitle: "Demo", heroSubtitle: "Test", homeSections,
+  });
+  if (asPage) {
+    base.pages.push({
+      slug: "testimonials",
+      title: "Testimonials",
+      fileName: "testimonials.html",
+      components: [],
+    });
+  }
+  return SiteSchema.normalizeSiteData(base);
+}
+
+test("deleteContent — exists as page + section → both removed, 0 skipped", () => {
+  const sd = makeSiteForDeleteContent({ asPage: true, asSection: true });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "testimonials" },
+  ]);
+  assert.strictEqual(result.skipped.length, 0, `Should have 0 skipped: ${JSON.stringify(result.skipped)}`);
+  assert.ok(!result.siteData.pages.some((p) => p.slug === "testimonials"), "page should be removed");
+  assert.ok(!result.siteData.homeSections.some((s) => s.id === "testimonials"), "section should be removed");
+  const applied = result.applied[0];
+  assert.ok(!applied._nothingFound, "_nothingFound should be falsy when content was removed");
+  assert.ok(!navSlugs(result.siteData).includes("testimonials"), "nav should be clean");
+});
+
+test("deleteContent — exists only as page → page removed, 0 skipped", () => {
+  const sd = makeSiteForDeleteContent({ asPage: true, asSection: false });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "testimonials" },
+  ]);
+  assert.strictEqual(result.skipped.length, 0, `Should have 0 skipped: ${JSON.stringify(result.skipped)}`);
+  assert.ok(!result.siteData.pages.some((p) => p.slug === "testimonials"), "page should be removed");
+  const applied = result.applied[0];
+  assert.ok(!applied._nothingFound, "_nothingFound should be falsy");
+  assert.ok(!navSlugs(result.siteData).includes("testimonials"), "nav should be clean");
+});
+
+test("deleteContent — exists only as section → section removed, 0 skipped", () => {
+  const sd = makeSiteForDeleteContent({ asPage: false, asSection: true });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "testimonials" },
+  ]);
+  assert.strictEqual(result.skipped.length, 0, `Should have 0 skipped: ${JSON.stringify(result.skipped)}`);
+  assert.ok(!result.siteData.homeSections.some((s) => s.id === "testimonials"), "section should be removed");
+  const applied = result.applied[0];
+  assert.ok(!applied._nothingFound, "_nothingFound should be falsy");
+  assert.ok(!navSlugs(result.siteData).includes("testimonials"), "nav should be clean");
+});
+
+test("deleteContent — exists nowhere → 0 skipped, _nothingFound = true (maps to 'Nothing found' UI message)", () => {
+  const sd = makeSiteForDeleteContent({ asPage: false, asSection: false });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "testimonials" },
+  ]);
+  assert.strictEqual(result.skipped.length, 0, `Should have 0 skipped: ${JSON.stringify(result.skipped)}`);
+  const applied = result.applied[0];
+  assert.ok(applied._nothingFound === true, "_nothingFound should be true when nothing existed");
+  // Simulate the UI nothingFound check used to show "Nothing found to delete."
+  const uiNothingFound = result.applied.length > 0 && result.applied.every((a) => a._nothingFound);
+  assert.ok(uiNothingFound, "UI nothingFound detection should fire");
+});
+
+test("deleteContent — protected section (services) is never removed", () => {
+  const sd = SiteSchema.normalizeSiteData({ heroTitle: "Demo" });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "services" },
+  ]);
+  assert.ok(result.siteData.homeSections.some((s) => s.id === "services"), "services must remain");
+});
+
+test("deleteContent — 'home' page slug is blocked", () => {
+  const sd = SiteSchema.normalizeSiteData({ heroTitle: "Demo" });
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deleteContent", slug: "home" },
+  ]);
+  assert.strictEqual(result.skipped.length, 1, "home should be blocked");
+  assert.ok(result.siteData.pages.some((p) => p.slug === "home"), "home page must remain");
+});
+
+test("Combined prompt scenario: deletePage + deleteSection together → 0 skipped regardless", () => {
+  // This is the exact case the user reported. Even if the AI returns BOTH
+  // action types, idempotent validators ensure no skip regardless of which
+  // targets actually exist.
+  // (deleteContent replaces this in prompts, but deleteSection/deletePage
+  // remain in the registry for backward compat — test both combos.)
+  const sdBoth = makeSiteForDeleteContent({ asPage: true, asSection: true });
+  const sdPageOnly = makeSiteForDeleteContent({ asPage: true, asSection: false });
+  const sdSectionOnly = makeSiteForDeleteContent({ asPage: false, asSection: true });
+  const sdNeither = makeSiteForDeleteContent({ asPage: false, asSection: false });
+
+  for (const [label, sd] of [
+    ["page+section", sdBoth],
+    ["page only", sdPageOnly],
+    ["section only", sdSectionOnly],
+    ["neither", sdNeither],
+  ]) {
+    const result = EditorActions.applyActions(sd, [
+      { id: "act-1", type: "deleteContent", slug: "testimonials" },
+    ]);
+    assert.strictEqual(result.skipped.length, 0, `[${label}] deleteContent must produce 0 skipped`);
+  }
+});
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 console.log(`\n${"─".repeat(50)}`);

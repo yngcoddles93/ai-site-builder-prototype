@@ -371,9 +371,10 @@ AVAILABLE ACTION TYPES:
    position values: "start" | "end" | "before:<sectionId>" | "after:<sectionId>"
    Example: { "type": "addSection", "section": { "id": "testimonials", "type": "testimonials", "visible": true, "title": "What Clients Say" }, "position": "before:contact" }
 
-4. deleteSection — Remove a custom section (built-in sections hero/services/features/about/contact cannot be deleted)
-   Required: type, path ("sections.<id>")
-   Example: { "type": "deleteSection", "path": "sections.testimonials" }
+4. deleteContent — Remove content by slug. Deletes a matching custom page from siteData.pages AND a matching home section from siteData.homeSections (built-in sections hero/services/features/about/contact are protected and will not be removed). Safe to use even if only a page exists, only a section exists, or both exist.
+   Required: type, slug (string — the id/slug of the content to delete)
+   Example: { "type": "deleteContent", "slug": "testimonials" }
+   Use this instead of deleteSection for any delete or remove request.
 
 5. moveSection — Reorder a section on the home page
    Required: type, path ("sections.<id>"), position
@@ -408,16 +409,16 @@ ${prompt}
 }
 
 // Lightweight intent-classifier: only used when the user is on a custom page.
-// Returns { actions: [{ type: "deletePage", slug }] } if intent is page deletion,
+// Returns { actions: [{ type: "deleteContent", slug }] } if intent is deletion,
 // or { actions: [] } for everything else — which falls through to patch mode.
 function buildPageActionsPrompt(pageSlug, prompt) {
   return `You are an intent classifier for a website editor.
 The user is editing a custom page with slug: "${pageSlug}".
 
-Does the user want to DELETE or REMOVE this entire page?
+Does the user want to DELETE or REMOVE this page (or any content with this slug)?
 
 If YES, return exactly:
-{ "actions": [{ "type": "deletePage", "slug": "${pageSlug}" }] }
+{ "actions": [{ "type": "deleteContent", "slug": "${pageSlug}" }] }
 
 If NO (the user wants to edit content, add sections, change text, etc.), return exactly:
 { "actions": [] }
