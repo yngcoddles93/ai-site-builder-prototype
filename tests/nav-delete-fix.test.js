@@ -221,6 +221,109 @@ test("Remaining built-in sections (services, features, about, contact) still pre
   }
 });
 
+// ── Regression: Add Page → Delete Page → nav clean → save/reload → publish ───
+
+console.log("\nRegression: Add Page → Delete Page via deletePage action:");
+
+function makeSiteWithCustomPage(pageSlug = "faq") {
+  const base = SiteSchema.normalizeSiteData({
+    heroTitle: "Demo Site",
+    heroSubtitle: "Testing page deletion",
+  });
+  base.pages.push({
+    slug: pageSlug,
+    title: pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1),
+    fileName: `${pageSlug}.html`,
+    components: [{ id: "c1", type: "text", value: "Some page content." }],
+  });
+  return SiteSchema.normalizeSiteData(base);
+}
+
+test("Add Page: custom page appears in nav", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const nav = navSlugs(sd);
+  assert.ok(nav.includes("faq"), `Nav should include "faq". Got: ${nav}`);
+});
+
+test("Delete Page: deletePage action removes the page from data.pages", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "faq" },
+  ]);
+  assert.strictEqual(result.skipped.length, 0, `Should not skip: ${JSON.stringify(result.skipped)}`);
+  const pageStillExists = result.siteData.pages.some((p) => p.slug === "faq");
+  assert.ok(!pageStillExists, '"faq" page should be removed from data.pages');
+});
+
+test("Delete Page: nav link disappears immediately", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "faq" },
+  ]);
+  const nav = navSlugs(result.siteData);
+  assert.ok(!nav.includes("faq"), `Nav should not include "faq" after delete. Got: ${nav}`);
+});
+
+test("Save/reload: re-normalizing after delete does not bring page back", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "faq" },
+  ]);
+  const reloaded = SiteSchema.normalizeSiteData(
+    JSON.parse(JSON.stringify(result.siteData))
+  );
+  const nav = navSlugs(reloaded);
+  assert.ok(!nav.includes("faq"), `Nav should stay clean after reload. Got: ${nav}`);
+  const pageBack = reloaded.pages.some((p) => p.slug === "faq");
+  assert.ok(!pageBack, '"faq" should not reappear in pages after reload');
+});
+
+test("Publish: getHomeSectionNavLinks does not include the deleted page's link", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "faq" },
+  ]);
+  const sectionLinks = SiteSchema.getHomeSectionNavLinks(result.siteData);
+  const ids = sectionLinks.map((s) => s.id);
+  assert.ok(!ids.includes("faq"), `Published section links should not include "faq". Got: ${ids}`);
+});
+
+test("Home page survives: 'home' is protected from deletePage", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "home" },
+  ]);
+  assert.strictEqual(result.skipped.length, 1, "Deleting 'home' should be skipped");
+  const homeExists = result.siteData.pages.some((p) => p.slug === "home");
+  assert.ok(homeExists, '"home" page must remain after rejected deletePage');
+});
+
+test("deletePage for non-existent page is skipped gracefully", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  const result = EditorActions.applyActions(sd, [
+    { id: "act-1", type: "deletePage", slug: "does-not-exist" },
+  ]);
+  assert.strictEqual(result.skipped.length, 1, "Unknown page delete should be skipped");
+  assert.ok(result.siteData.pages.some((p) => p.slug === "faq"), "Other pages unaffected");
+});
+
+test("Multiple pages: deleting one does not affect others", () => {
+  const sd = makeSiteWithCustomPage("faq");
+  sd.pages.push({
+    slug: "about-us",
+    title: "About Us",
+    fileName: "about-us.html",
+    components: [],
+  });
+  const normalized = SiteSchema.normalizeSiteData(sd);
+  const result = EditorActions.applyActions(normalized, [
+    { id: "act-1", type: "deletePage", slug: "faq" },
+  ]);
+  assert.ok(!result.siteData.pages.some((p) => p.slug === "faq"), '"faq" should be gone');
+  assert.ok(result.siteData.pages.some((p) => p.slug === "about-us"), '"about-us" should remain');
+  assert.ok(result.siteData.pages.some((p) => p.slug === "home"), '"home" should remain');
+});
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 console.log(`\n${"─".repeat(50)}`);

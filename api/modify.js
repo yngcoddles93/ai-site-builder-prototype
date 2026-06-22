@@ -407,6 +407,27 @@ ${prompt}
 `;
 }
 
+// Lightweight intent-classifier: only used when the user is on a custom page.
+// Returns { actions: [{ type: "deletePage", slug }] } if intent is page deletion,
+// or { actions: [] } for everything else — which falls through to patch mode.
+function buildPageActionsPrompt(pageSlug, prompt) {
+  return `You are an intent classifier for a website editor.
+The user is editing a custom page with slug: "${pageSlug}".
+
+Does the user want to DELETE or REMOVE this entire page?
+
+If YES, return exactly:
+{ "actions": [{ "type": "deletePage", "slug": "${pageSlug}" }] }
+
+If NO (the user wants to edit content, add sections, change text, etc.), return exactly:
+{ "actions": [] }
+
+Do NOT include "id" fields. Do NOT return anything other than one of the two JSON shapes above.
+When in doubt, return { "actions": [] }.
+
+User request: ${prompt}`;
+}
+
 // ── OpenAI call ───────────────────────────────────────────────────────────────
 
 async function callOpenAI(prompt) {
@@ -478,6 +499,32 @@ export default async function handler(req, res) {
       }
 
       // Actions parse failed — fall through to patch mode as silent fallback.
+    }
+
+    // ── Custom page actions mode ──────────────────────────────────────────────
+    // Runs a lightweight intent classifier first. If the user wants to delete
+    // the page, returns a deletePage action. For everything else, the classifier
+    // returns { actions: [] } and we fall through to patch mode so content
+    // editing continues to work unchanged.
+    if (useActions && isCustomPage) {
+      const pageActionsText = await callOpenAI(buildPageActionsPrompt(section, prompt));
+
+      let pageActionsParsed;
+      try {
+        pageActionsParsed = JSON.parse(pageActionsText);
+      } catch {
+        pageActionsParsed = null;
+      }
+
+      if (pageActionsParsed && Array.isArray(pageActionsParsed.actions) && pageActionsParsed.actions.length > 0) {
+        const actions = pageActionsParsed.actions.map((action) => ({
+          ...action,
+          id: randomUUID(),
+          meta: { source: "ai", ...(action.meta || {}) },
+        }));
+        return res.status(200).json({ actions, responseFormat: "actions" });
+      }
+      // Empty actions or parse failure — fall through to patch mode.
     }
 
     // ── Patch mode (default and fallback) ────────────────────────────────────

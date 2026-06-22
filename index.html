@@ -1097,7 +1097,6 @@ if (
 ) {
   safeSiteData.logoUrl = "";
 }
-        // Home sections use the actions path; custom pages stay on the patch path.
         const isHomePage = currentPage === "home";
         const requestSection = isHomePage ? currentEditSection : currentPage;
 
@@ -1108,7 +1107,7 @@ if (
             prompt: editPrompt,
             siteData: safeSiteData,
             section: requestSection,
-            useActions: isHomePage,
+            useActions: true,
           })
         });
 
@@ -1130,6 +1129,20 @@ if (
           const result = EditorActions.applyActions(siteData, data.actions);
           siteData = result.siteData;
 
+          // If the active custom page was deleted, switch back to home so
+          // the user isn't left on a page that no longer exists.
+          const deletedCurrentPage = result.applied.find(
+            (a) => a.type === "deletePage" && a.slug === currentPage
+          );
+          if (deletedCurrentPage) {
+            currentPage = "home";
+            const label = document.getElementById("editingLabel");
+            if (label) {
+              const sec = currentEditSection || "home";
+              label.textContent = "Editing: " + sec.charAt(0).toUpperCase() + sec.slice(1);
+            }
+          }
+
           if (result.skipped.length > 0) {
             console.warn("EditorActions skipped:", result.skipped);
           }
@@ -1137,7 +1150,9 @@ if (
           const skipMsg = result.skipped.length > 0
             ? ` (${result.skipped.length} change${result.skipped.length === 1 ? "" : "s"} could not be applied)`
             : "";
-          statusText.textContent = `Website updated.${skipMsg}`;
+          statusText.textContent = deletedCurrentPage
+            ? "Page deleted."
+            : `Website updated.${skipMsg}`;
 
         } else if (isHomePage) {
           // ── Patch path for home (actions fallback) ──────────────────────────
