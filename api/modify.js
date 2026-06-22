@@ -1,61 +1,23 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+import { randomUUID } from "crypto";
 
-  try {
-    const { prompt, siteData, section } = req.body;
+// ── Section field map (patch mode) ────────────────────────────────────────────
 
-    if (!prompt || !siteData || !section) {
-      return res.status(400).json({
-        error: "Prompt, siteData, and section are required"
-      });
-    }
+const SECTION_FIELD_MAP = {
+  hero:     ["heroTitle", "heroSubtitle", "logoUrl", "heroImageUrl", "theme", "layout"],
+  services: ["services"],
+  features: ["features"],
+  about:    ["about"],
+  contact:  ["contact"],
+  all: [
+    "heroTitle", "heroSubtitle", "services", "features", "about", "contact",
+    "logoUrl", "heroImageUrl", "theme", "layout"
+  ]
+};
 
-    const sectionFieldMap = {
-      hero: [
-  "heroTitle",
-  "heroSubtitle",
-  "logoUrl",
-  "heroImageUrl",
-  "theme",
-  "layout"
-],
-      services: ["services"],
-      features: ["features"],
-      about: ["about"],
-      contact: ["contact"],
-     all: [
-  "heroTitle",
-  "heroSubtitle",
-  "services",
-  "features",
-  "about",
-  "contact",
-  "logoUrl",
-  "heroImageUrl",
-  "theme",
-  "layout"
-]
-    };
+// ── Prompt builders ───────────────────────────────────────────────────────────
 
-    let allowedKeys = sectionFieldMap[section];
-
-    const isCustomPage = siteData.pages?.some(
-      page => page.slug === section
-    );
-
-    if (!allowedKeys && isCustomPage) {
-      allowedKeys = ["content"];
-    }
-
-    if (!allowedKeys) {
-      return res.status(400).json({
-        error: "Invalid section selected"
-      });
-    }
-
-    const aiPrompt = `
+function buildPatchPrompt(siteData, section, allowedKeys, prompt) {
+  return `
 You are editing an existing website.
 
 Return ONLY valid JSON.
@@ -363,11 +325,6 @@ If section is "hero" and the user says "make the title more premium", return:
   "heroTitle": "Luxury Mobile Detailing"
 }
 
-If section is "hero" and the user says "change the subtitle", return:
-{
-  "heroSubtitle": "Premium detailing brought directly to your driveway."
-}
-
 If section is "services" and the user says "add ceramic coating", return:
 {
   "services": [
@@ -378,129 +335,172 @@ If section is "services" and the user says "add ceramic coating", return:
   ]
 }
 
-If editing a pricing page and the user says "add pricing tiers", return:
-{
-  "content": [
-    {
-      "type": "pricing",
-      "tiers": [
-        {
-          "name": "Basic",
-          "price": 500,
-          "description": "Entry level package"
-        },
-        {
-          "name": "Premium",
-          "price": 900,
-          "description": "Most popular package"
-        }
-      ]
-    }
-  ]
-}
-
-If editing a testimonials page and the user says "add testimonials", return:
-{
-  "content": [
-    {
-      "type": "testimonial",
-      "reviews": [
-        {
-          "name": "Sarah M.",
-          "rating": 5,
-          "quote": "The service was professional, easy, and the results were excellent."
-        },
-        {
-          "name": "James R.",
-          "rating": 5,
-          "quote": "Everything looked polished, premium, and exactly how I wanted it."
-        }
-      ]
-    }
-  ]
-}
-
-If editing an FAQ page and the user says "add common questions", return:
-{
-  "content": [
-    {
-      "type": "faq",
-      "items": [
-        {
-          "question": "How do I get started?",
-          "answer": "Contact us with your needs and we will recommend the best option."
-        },
-        {
-          "question": "Do you offer custom packages?",
-          "answer": "Yes, packages can be customized based on your goals and budget."
-        }
-      ]
-    }
-  ]
-}
-
 If no change is needed, return:
 {}
 `;
+}
 
-    const response = await fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-5.4",
-          input: aiPrompt
-        })
-      }
-    );
+function buildActionsPrompt(siteData, section, prompt) {
+  return `
+You are editing a website. Return ONLY this exact JSON shape — no markdown, no prose, no extra keys:
+{
+  "actions": [ ... ]
+}
 
-    const result = await response.json();
+Do NOT include "id" fields — they are injected automatically.
 
-    if (!response.ok) {
-      console.error("OpenAI API error:", result);
+AVAILABLE ACTION TYPES:
 
-      return res.status(500).json({
-        error:
-          result.error?.message || "OpenAI request failed"
-      });
+1. updateText — Change a single text field
+   Required: type, path, value (string)
+   Valid paths: "hero.title" | "hero.subtitle" | "hero.logo" | "hero.image" | "about.text" | "contact.text"
+   Example: { "type": "updateText", "path": "hero.title", "value": "Premium Auto Detailing" }
+
+2. replaceSection — Replace the full structured content of a home section
+   Required: type, path ("sections.<id>"), payload (object)
+   Payload shapes:
+     sections.hero     → { "heroTitle": "...", "heroSubtitle": "..." }
+     sections.services → { "services": [{ "title": "...", "description": "..." }] }
+     sections.features → { "features": [{ "title": "...", "description": "..." }] }
+     sections.about    → { "about": "..." }
+     sections.contact  → { "contact": "..." }
+   Example: { "type": "replaceSection", "path": "sections.services", "payload": { "services": [{ "title": "Full Detail", "description": "Interior and exterior cleaning." }] } }
+
+3. addSection — Add a new section to the home page
+   Required: type, section (object with id, type, visible, title), position
+   position values: "start" | "end" | "before:<sectionId>" | "after:<sectionId>"
+   Example: { "type": "addSection", "section": { "id": "testimonials", "type": "testimonials", "visible": true, "title": "What Clients Say" }, "position": "before:contact" }
+
+4. deleteSection — Remove a custom section (built-in sections hero/services/features/about/contact cannot be deleted)
+   Required: type, path ("sections.<id>")
+   Example: { "type": "deleteSection", "path": "sections.testimonials" }
+
+5. moveSection — Reorder a section on the home page
+   Required: type, path ("sections.<id>"), position
+   position values: "start" | "end" | "before:<sectionId>" | "after:<sectionId>"
+   Example: { "type": "moveSection", "path": "sections.about", "position": "after:hero" }
+
+6. update_theme — Change visual theme (colors, style)
+   Required: type, payload (object)
+   Payload keys: backgroundColor, textColor, primaryColor, secondaryColor, accent, heroBackground, navBackground, navText, style, fontStyle, buttonStyle, cardStyle, borderRadius
+   Use valid hex colors only.
+   Example: { "type": "update_theme", "payload": { "backgroundColor": "#0f172a", "textColor": "#ffffff", "accent": "#d4af37" } }
+
+7. update_layout — Change layout alignment
+   Required: type, payload (object)
+   Payload keys: heroAlign ("left"|"center"), sectionAlign ("left"|"center"), heroImagePosition ("left"|"right"), navAlign ("space-between"|"center"|"space-around")
+   Example: { "type": "update_layout", "payload": { "heroAlign": "center" } }
+
+RULES:
+- Use the minimum number of actions to fulfill the request.
+- Do not return actions for things the user did not ask to change.
+- Editing scope: "${section}" — only return actions relevant to this scope.
+- Interpret informal or misspelled requests intelligently.
+- Always produce polished, professional marketing-quality copy.
+- If no change is needed, return: { "actions": [] }
+
+CURRENT WEBSITE DATA:
+${JSON.stringify(siteData, null, 2)}
+
+USER REQUEST:
+${prompt}
+`;
+}
+
+// ── OpenAI call ───────────────────────────────────────────────────────────────
+
+async function callOpenAI(prompt) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({ model: "gpt-5.4", input: prompt })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || "OpenAI request failed");
+  }
+
+  return result.output?.[0]?.content?.[0]?.text || result.output_text || "";
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { prompt, siteData, section, useActions } = req.body;
+
+    if (!prompt || !siteData || !section) {
+      return res.status(400).json({ error: "Prompt, siteData, and section are required" });
     }
 
-    const outputText =
-      result.output?.[0]?.content?.[0]?.text ||
-      result.output_text ||
-      "";
+    let allowedKeys = SECTION_FIELD_MAP[section];
+    const isCustomPage = siteData.pages?.some((page) => page.slug === section);
+
+    if (!allowedKeys && isCustomPage) allowedKeys = ["content"];
+    if (!allowedKeys) return res.status(400).json({ error: "Invalid section selected" });
+
+    // ── Actions mode ─────────────────────────────────────────────────────────
+    // Custom pages stay on the patch path — the Phase 1 action types operate
+    // on home sections and text fields only.
+    if (useActions && !isCustomPage) {
+      const actionsPrompt = buildActionsPrompt(siteData, section, prompt);
+      const outputText = await callOpenAI(actionsPrompt);
+
+      let parsed;
+      try {
+        parsed = JSON.parse(outputText);
+      } catch {
+        // JSON parse failed — fall through to patch mode below.
+        parsed = null;
+      }
+
+      if (parsed && Array.isArray(parsed.actions)) {
+        // Inject server-generated IDs and source metadata on every action.
+        const actions = parsed.actions.map((action) => ({
+          ...action,
+          id: randomUUID(),
+          meta: {
+            source: "ai",
+            ...(action.meta || {}),
+          },
+        }));
+
+        return res.status(200).json({ actions, responseFormat: "actions" });
+      }
+
+      // Actions parse failed — fall through to patch mode as silent fallback.
+    }
+
+    // ── Patch mode (default and fallback) ────────────────────────────────────
+    const patchPrompt = buildPatchPrompt(siteData, section, allowedKeys, prompt);
+    const outputText = await callOpenAI(patchPrompt);
 
     let parsed;
-
     try {
       parsed = JSON.parse(outputText);
-    } catch (parseError) {
+    } catch {
       console.error("JSON parse error:", outputText);
-
-      return res.status(500).json({
-        error: "AI returned an invalid format. Try again."
-      });
+      return res.status(500).json({ error: "AI returned an invalid format. Try again." });
     }
 
     const cleanedUpdates = {};
-
     for (const key of allowedKeys) {
-      if (parsed[key] !== undefined) {
-        cleanedUpdates[key] = parsed[key];
-      }
+      if (parsed[key] !== undefined) cleanedUpdates[key] = parsed[key];
     }
 
-    return res.status(200).json(cleanedUpdates);
+    return res.status(200).json({ ...cleanedUpdates, responseFormat: "patch" });
 
   } catch (error) {
     console.error("Server error:", error);
-
-    return res.status(500).json({
-      error: "Server error"
-    });
+    return res.status(500).json({ error: "Server error" });
   }
 }

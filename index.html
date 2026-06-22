@@ -1097,15 +1097,18 @@ if (
 ) {
   safeSiteData.logoUrl = "";
 }
+        // Home sections use the actions path; custom pages stay on the patch path.
+        const isHomePage = currentPage === "home";
+        const requestSection = isHomePage ? currentEditSection : currentPage;
+
         const response = await fetch("/api/modify", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             prompt: editPrompt,
             siteData: safeSiteData,
-           section: currentPage === "home" ? currentEditSection : currentPage
+            section: requestSection,
+            useActions: isHomePage,
           })
         });
 
@@ -1115,42 +1118,51 @@ if (
         try {
           data = JSON.parse(rawText);
         } catch {
-          throw new Error(
-            parseApiErrorResponse(rawText, "Update failed.")
-          );
+          throw new Error(parseApiErrorResponse(rawText, "Update failed."));
         }
 
         if (!response.ok) {
-          throw new Error(
-            parseApiErrorResponse(rawText, data.error || "Update failed.")
-          );
+          throw new Error(parseApiErrorResponse(rawText, data.error || "Update failed."));
         }
 
-       if (currentPage === "home") {
-  siteData = normalizeCurrentSiteData({
-    ...siteData,
-    ...data
-  });
-} else {
-  const pageIndex = siteData.pages.findIndex(p => p.slug === currentPage);
+        if (data.responseFormat === "actions" && Array.isArray(data.actions)) {
+          // ── EditorActions path ──────────────────────────────────────────────
+          const result = EditorActions.applyActions(siteData, data.actions);
+          siteData = result.siteData;
 
-if (pageIndex !== -1) {
-  if (Array.isArray(data.content)) {
-   siteData.pages[pageIndex].components = [
-  ...(siteData.pages[pageIndex].components || []),
-  ...data.content
-];
-  }
-}
-  siteData = normalizeCurrentSiteData(siteData);
-}
+          if (result.skipped.length > 0) {
+            console.warn("EditorActions skipped:", result.skipped);
+          }
 
-renderSite(siteData);
+          const skipMsg = result.skipped.length > 0
+            ? ` (${result.skipped.length} change${result.skipped.length === 1 ? "" : "s"} could not be applied)`
+            : "";
+          statusText.textContent = `Website updated.${skipMsg}`;
+
+        } else if (isHomePage) {
+          // ── Patch path for home (actions fallback) ──────────────────────────
+          const { responseFormat: _rf, ...patch } = data;
+          siteData = normalizeCurrentSiteData({ ...siteData, ...patch });
+          statusText.textContent = "Website updated.";
+
+        } else {
+          // ── Patch path for custom pages (unchanged) ─────────────────────────
+          const pageIndex = siteData.pages.findIndex((p) => p.slug === currentPage);
+          if (pageIndex !== -1 && Array.isArray(data.content)) {
+            siteData.pages[pageIndex].components = [
+              ...(siteData.pages[pageIndex].components || []),
+              ...data.content,
+            ];
+          }
+          siteData = normalizeCurrentSiteData(siteData);
+          statusText.textContent = "Website updated.";
+        }
+
+        renderSite(siteData);
         saveCurrentSite();
         renderHistoryList();
 
         document.getElementById("exportBtn").style.display = "inline-block";
-        statusText.textContent = "Website updated.";
         document.getElementById("editPrompt").value = "";
       } catch (error) {
         console.error(error);
