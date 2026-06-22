@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Site Builder Prototype</title>
+  <title>AI Website Builder</title>
   <link rel="stylesheet" href="/lib/site-theme.css" />
 
   <style>
@@ -175,76 +175,76 @@
 
   <div class="container">
     <h1>AI Website Builder</h1>
-    <p class="subtext">This prototype uses AI to turn a prompt into a website preview.</p>
+    <p class="subtext">Describe your business and we'll build a complete website for you.</p>
 
-    <textarea id="promptInput" placeholder="Example: Build a modern website for a mobile detailing business with a dark theme, services, pricing, testimonials, and contact section."></textarea>
+    <textarea id="promptInput" placeholder="Describe your business — what you do, who you help, and the vibe you want. Example: I run a mobile dog grooming service in Austin. I want something friendly and modern."></textarea>
     <br />
-    <button onclick="generateSite()">Generate Website</button>
+    <button onclick="generateSite()">Build My Website</button>
 
     <br /><br />
 
     <div style="margin-bottom:10px;" id="editSectionButtons">
-      <button id="btn-hero" onclick="setEditSection('hero')">Edit Hero</button>
-      <button id="btn-services" onclick="setEditSection('services')">Edit Services</button>
-      <button id="btn-features" onclick="setEditSection('features')">Edit Features</button>
-      <button id="btn-about" onclick="setEditSection('about')">Edit About</button>
-      <button id="btn-contact" onclick="setEditSection('contact')">Edit Contact</button>
-      <button id="btn-all" onclick="setEditSection('all')">Edit Entire Site</button>
+      <button id="btn-hero" onclick="setEditSection('hero')">Intro</button>
+      <button id="btn-services" onclick="setEditSection('services')">Services</button>
+      <button id="btn-features" onclick="setEditSection('features')">Why Us</button>
+      <button id="btn-about" onclick="setEditSection('about')">About</button>
+      <button id="btn-contact" onclick="setEditSection('contact')">Contact</button>
+      <button id="btn-all" onclick="setEditSection('all')">Whole Site</button>
     </div>
 
   <div style="margin-bottom:10px;">
- <button onclick="addPage()">Add Page</button>
-<button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export Website</button>
-<button id="launchBtn" onclick="launchWebsite()">Launch Website</button>
-   <button onclick="saveProject()">Save Project</button>
-<button onclick="loadProjects()">Load Projects</button>
-<button onclick="newProject()">New Project</button>
+  <button onclick="addPage()">Add a Page</button>
+  <button id="exportBtn" onclick="exportWebsite()" style="display:none;">Export HTML</button>
+  <button id="launchBtn" onclick="launchWebsite()">Publish</button>
+  <button onclick="saveProject()">Save</button>
+  <button onclick="loadProjects()">My Sites</button>
+  <button onclick="newProject()">New Site</button>
 </div>
 
 <div id="projectsList" style="margin-top:15px; display:none;"></div>
 
    <div class="image-controls">
-  <h3>Image Studio</h3>
+  <h3>Photos & Logo</h3>
 
-  <label for="logoUrlInput">Logo Image URL</label>
-  <input id="logoUrlInput" placeholder="Paste logo image URL here" />
+  <label for="logoUrlInput">Your logo</label>
+  <input id="logoUrlInput" placeholder="Paste a logo image URL" />
 
-  <label for="heroImageUrlInput">Hero Image URL</label>
-  <input id="heroImageUrlInput" placeholder="Paste hero image URL here" />
+  <label for="heroImageUrlInput">Main photo</label>
+  <input id="heroImageUrlInput" placeholder="Paste a photo URL" />
 
-  <button onclick="applyImageChanges()">Apply Images</button>
+  <button onclick="applyImageChanges()">Update</button>
 
   <hr style="border:0;border-top:1px solid #1f2937;margin:22px 0;">
 
-  <label for="heroImagePromptInput">Generate Hero Image With AI</label>
+  <label for="heroImagePromptInput">Generate a photo with AI</label>
   <textarea
     id="heroImagePromptInput"
-    placeholder="Example: Luxury car detailing garage, black and gold lighting, premium cinematic photo"
+    placeholder="Example: Luxury car detailing garage, black and gold lighting, cinematic photo"
   ></textarea>
 
-  <button onclick="generateHeroImage()">Generate Hero Image</button>
+  <button onclick="generateHeroImage()">Generate Photo</button>
 
   <div id="heroImageResult" style="margin-top:16px;"></div>
 </div>
 
     <div class="logo-suggestion-box">
-      <h3>AI Logo Suggestions</h3>
+      <h3>Logo Ideas</h3>
 
       <textarea
         id="logoPromptInput"
-        placeholder="Example: Give me premium black and gold logo options for a luxury car detailing business"
+        placeholder="Example: Premium black and gold logo for a luxury car detailing business"
       ></textarea>
 
-      <button onclick="suggestLogos()">Suggest Logos</button>
+      <button onclick="suggestLogos()">Generate Logo Options</button>
 
       <div id="logoOptionsGrid" class="logo-options-grid"></div>
     </div>
 <p id="editingLabel" style="color:#cbd5e1; font-weight:bold; margin-bottom:8px;">
-  Editing: Home
+  You're editing: your whole site
 </p>
-    <textarea id="editPrompt" placeholder="Example: Add testimonials, change colors to gold, or make tone more modern"></textarea>
+    <textarea id="editPrompt" placeholder="What would you like to change? Try: 'Make it feel more premium' or 'Add a section for client reviews'"></textarea>
     <br />
-   <button onclick="modifySite()">Modify Current Page</button>
+    <button onclick="modifySite()">Make this change</button>
     <div class="status" id="statusText"></div>
 
     <div class="preview" id="previewBox" style="display:none;">
@@ -270,8 +270,8 @@
   </div>
 
   <div class="history-panel">
-    <h3>Version History</h3>
-    <button onclick="clearVersionHistory()">Clear Old History</button>
+    <h3>History</h3>
+    <button onclick="clearVersionHistory()">Clear</button>
     <div id="historyList"></div>
   </div>
 
@@ -491,7 +491,7 @@ function applyNewProjectReset(options = {}) {
   if (launchBtn) launchBtn.style.display = "none";
 
   const editingLabel = document.getElementById("editingLabel");
-  if (editingLabel) editingLabel.textContent = "Editing: Home";
+  if (editingLabel) editingLabel.textContent = "You're editing: your whole site";
 
   setEditSection("all");
   renderHistoryList();
@@ -901,7 +901,7 @@ function switchPage(slug) {
   const label = document.getElementById("editingLabel");
 
   if (label) {
-    label.textContent = "Editing: " + page.title;
+    label.textContent = "You're editing: " + page.title;
   }
 }
 function renderSite(data) {
@@ -1140,8 +1140,8 @@ if (
             currentPage = "home";
             const label = document.getElementById("editingLabel");
             if (label) {
-              const sec = currentEditSection || "home";
-              label.textContent = "Editing: " + sec.charAt(0).toUpperCase() + sec.slice(1);
+              const name = SECTION_DISPLAY_NAMES[currentEditSection] || "your whole site";
+              label.textContent = `You're editing: ${name}`;
             }
           }
 
@@ -1305,12 +1305,19 @@ async function generateHeroImage() {
     `;
   }
 }
+    const SECTION_DISPLAY_NAMES = {
+      hero:     "your intro",
+      services: "your services",
+      features: "why you stand out",
+      about:    "your story",
+      contact:  "your contact info",
+      all:      "your whole site",
+    };
+
     function setEditSection(section) {
       currentEditSection = section;
-      console.log("Editing section:", section);
 
       const buttons = document.querySelectorAll("#editSectionButtons button");
-
       buttons.forEach(button => {
         button.style.background = "#3b82f6";
         button.style.boxShadow = "none";
@@ -1323,25 +1330,11 @@ async function generateHeroImage() {
         activeButton.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.35)";
         activeButton.style.transform = "scale(0.98)";
       }
-    }
 
-    function setEditSection(section) {
-      currentEditSection = section;
-      console.log("Editing section:", section);
-
-      const buttons = document.querySelectorAll("#editSectionButtons button");
-
-      buttons.forEach(button => {
-        button.style.background = "#3b82f6";
-        button.style.boxShadow = "none";
-        button.style.transform = "scale(1)";
-      });
-
-      const activeButton = document.getElementById(`btn-${section}`);
-      if (activeButton) {
-        activeButton.style.background = "#0f3aa9";
-        activeButton.style.boxShadow = "0 0 0 2px rgba(255,255,255,0.35)";
-        activeButton.style.transform = "scale(0.98)";
+      const label = document.getElementById("editingLabel");
+      if (label) {
+        const name = SECTION_DISPLAY_NAMES[section] || section;
+        label.textContent = `You're editing: ${name}`;
       }
     }
 
